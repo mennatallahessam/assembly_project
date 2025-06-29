@@ -6,23 +6,19 @@
 #include "decoder.h"
 
 class Ecalls {
-public:
-    Ecalls(Memory& mem, Registers& regs);
-
-    // Try to handle ecall, returns true if program halted
-    bool tryHandle(const DecodedInstr& instr, uint16_t& pc);
-
-    void printInt();
-
 private:
     Memory& memory;
     Registers& registers;
 
-    // Implement system calls below
-    void printString();
-    void programExit();
+public:
+    Ecalls(Memory& mem, Registers& regs);
+    bool tryHandle(const DecodedInstr& instr, uint16_t& pc);
 
-    // Add other system call handlers (playTone, stopAudio, etc.)
+private:
+    void printInt();
+    void printString();
+    void printChar();    // Add this line
+    void programExit();
 };
 
-#endif // ECALLS_H
+#endif

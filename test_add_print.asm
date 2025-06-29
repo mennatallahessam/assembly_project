@@ -1,16 +1,19 @@
-.data
-msg: .asciiz "Addition complete."
-
 .text
-    li a0, 5
-    li a1, 7
-    add t0, a0     # t0 = 12
+.org 0x000
+    j main
 
-    xor a0, a0
-    add a0, t0
-    ecall 1        # print 12
+.org 0x0020
+main:
+    # x1 = 12
+    addi x1, 12
 
-    la a1, msg
-    ecall 3        # print message
+    # x2 = 8
+    addi x2, 8
 
-    ecall 10       # exit
+    # ---- Addition ----
+    add x6, x1, x2    # x6 = x1 + x2 = 20
+    ecall 1           # print 20
+
+
+    # Exit
+    ecall 10

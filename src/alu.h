@@ -7,6 +7,8 @@
 
 class ALU {
 public:
+
+    void handleSysCall(int syscallCode, Registers& regs, Memory& mem);
     void execute(const DecodedInstr& instr, Registers& regs, Memory& mem, uint16_t& pc);
 };
 
