@@ -1,0 +1,3 @@
+"C:\Program Files\JetBrains\CLion 2024.3.5\bin\cmake\win\x64\bin\cmake.exe" -E rm -f CMakeFiles\assembly_project.dir/objects.a
+C:\PROGRA~1\JETBRA~1\CLION2~1.5\bin\mingw\bin\ar.exe qc CMakeFiles\assembly_project.dir/objects.a @CMakeFiles\assembly_project.dir\objects1.rsp
+C:\PROGRA~1\JETBRA~1\CLION2~1.5\bin\mingw\bin\G__~1.EXE -g -Wl,--whole-archive CMakeFiles\assembly_project.dir/objects.a -Wl,--no-whole-archive -o assembly_project.exe -Wl,--out-implib,libassembly_project.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\assembly_project.dir\linkLibs.rsp
