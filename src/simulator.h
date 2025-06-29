@@ -16,7 +16,7 @@ public:
 private:
     Memory mem;
     Registers regs;
-    Decoder decoder;
+    decoder decoder;
     ALU alu;
     Ecalls ecalls;
     uint16_t pc;

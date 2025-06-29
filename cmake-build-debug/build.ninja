@@ -94,6 +94,51 @@ build CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj: CXX_COMPILER__ass
   TARGET_COMPILE_PDB = CMakeFiles\assembly_project.dir\
   TARGET_PDB = assembly_project.pdb
 
+build CMakeFiles/assembly_project.dir/src/alu.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/alu.cpp || cmake_object_order_depends_target_assembly_project
+  DEP_FILE = CMakeFiles\assembly_project.dir\src\alu.cpp.obj.d
+  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  OBJECT_DIR = CMakeFiles\assembly_project.dir
+  OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\assembly_project.dir\
+  TARGET_PDB = assembly_project.pdb
+
+build CMakeFiles/assembly_project.dir/src/memory.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/memory.cpp || cmake_object_order_depends_target_assembly_project
+  DEP_FILE = CMakeFiles\assembly_project.dir\src\memory.cpp.obj.d
+  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  OBJECT_DIR = CMakeFiles\assembly_project.dir
+  OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\assembly_project.dir\
+  TARGET_PDB = assembly_project.pdb
+
+build CMakeFiles/assembly_project.dir/src/registers.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/registers.cpp || cmake_object_order_depends_target_assembly_project
+  DEP_FILE = CMakeFiles\assembly_project.dir\src\registers.cpp.obj.d
+  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  OBJECT_DIR = CMakeFiles\assembly_project.dir
+  OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\assembly_project.dir\
+  TARGET_PDB = assembly_project.pdb
+
+build CMakeFiles/assembly_project.dir/src/simulator.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/simulator.cpp || cmake_object_order_depends_target_assembly_project
+  DEP_FILE = CMakeFiles\assembly_project.dir\src\simulator.cpp.obj.d
+  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  OBJECT_DIR = CMakeFiles\assembly_project.dir
+  OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\assembly_project.dir\
+  TARGET_PDB = assembly_project.pdb
+
+build CMakeFiles/assembly_project.dir/src/utils.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/utils.cpp || cmake_object_order_depends_target_assembly_project
+  DEP_FILE = CMakeFiles\assembly_project.dir\src\utils.cpp.obj.d
+  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  OBJECT_DIR = CMakeFiles\assembly_project.dir
+  OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
+  TARGET_COMPILE_PDB = CMakeFiles\assembly_project.dir\
+  TARGET_PDB = assembly_project.pdb
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target assembly_project
@@ -102,7 +147,7 @@ build CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj: CXX_COMPILER__ass
 #############################################
 # Link the executable assembly_project.exe
 
-build assembly_project.exe: CXX_EXECUTABLE_LINKER__assembly_project_Debug CMakeFiles/assembly_project.dir/src/decoder.cpp.obj CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj CMakeFiles/assembly_project.dir/src/main.cpp.obj CMakeFiles/assembly_project.dir/initial_code.cpp.obj CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj
+build assembly_project.exe: CXX_EXECUTABLE_LINKER__assembly_project_Debug CMakeFiles/assembly_project.dir/src/decoder.cpp.obj CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj CMakeFiles/assembly_project.dir/src/main.cpp.obj CMakeFiles/assembly_project.dir/initial_code.cpp.obj CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj CMakeFiles/assembly_project.dir/src/alu.cpp.obj CMakeFiles/assembly_project.dir/src/memory.cpp.obj CMakeFiles/assembly_project.dir/src/registers.cpp.obj CMakeFiles/assembly_project.dir/src/simulator.cpp.obj CMakeFiles/assembly_project.dir/src/utils.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\assembly_project.dir
