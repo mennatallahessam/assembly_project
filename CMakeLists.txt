@@ -12,4 +12,14 @@ add_executable(assembly_project
     src/ecalls.h
     src/main.cpp
     "initial code.cpp"
-    zx_16_simulator.cpp)
+    zx_16_simulator.cpp
+        src/alu.h
+        src/alu.cpp
+        src/memory.h
+        src/memory.cpp
+        src/registers.h
+        src/registers.cpp
+        src/simulator.h
+        src/simulator.cpp
+        src/utils.h
+        src/utils.cpp)
