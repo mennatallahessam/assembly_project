@@ -18,3 +18,15 @@
 523	722	7729336551072973	assembly_project.exe	50b5b349876c8dfe
 23	394	7729337552250843	CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj	7024a42d626e2192
 395	507	7729337555964278	assembly_project.exe	50b5b349876c8dfe
+246	1146	7729686470982445	CMakeFiles/assembly_project.dir/src/main.cpp.obj	19f92711dc589e18
+1147	1948	7729686479993113	assembly_project.exe	50b5b349876c8dfe
+22	773	7729689483923071	CMakeFiles/assembly_project.dir/src/main.cpp.obj	19f92711dc589e18
+774	1038	7729689491442627	assembly_project.exe	50b5b349876c8dfe
+13	577	7729692362416977	CMakeFiles/assembly_project.dir/src/main.cpp.obj	19f92711dc589e18
+577	812	7729692368060953	assembly_project.exe	50b5b349876c8dfe
+31	684	7729693809546678	CMakeFiles/assembly_project.dir/src/main.cpp.obj	19f92711dc589e18
+685	958	7729693816083828	assembly_project.exe	50b5b349876c8dfe
+21	1299	7729699051537158	CMakeFiles/assembly_project.dir/src/main.cpp.obj	19f92711dc589e18
+79	1341	7729699052161637	CMakeFiles/assembly_project.dir/src/simulator.cpp.obj	cc2f01edb173db6d
+25	476	7729699190548060	CMakeFiles/assembly_project.dir/src/alu.cpp.obj	1c2cf2a90d2bdb12
+477	746	7729699195064230	assembly_project.exe	50b5b349876c8dfe
