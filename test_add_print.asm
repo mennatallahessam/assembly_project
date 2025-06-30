@@ -12,7 +12,9 @@ main:
 
     # ---- Addition ----
     add x6, x1, x2    # x6 = x1 + x2 = 20
-    ecall 1           # print 20
+
+    addi r10, 10         # syscall: exit
+    ecall
 
 
     # Exit
