@@ -1,118 +1,134 @@
-// #include "alu.h"
-// #include <stdexcept>
-// #include <iostream>
-// #include <cstdlib>   // For std::exit
-//
-// void ALU::handleSysCall(int syscallCode, Registers& regs, Memory& mem) {
-//     switch (syscallCode) {
-//         case 1:  // Print integer in x6 (a0)
-//             std::cout << regs[6] << std::endl;
-//         break;
-//
-//         case 2: {  // Print string from address in x11 (r11)
-//             uint16_t addr = regs[11];
-//             char ch;
-//             while ((ch = mem.readByte(addr++)) != 0) {
-//                 std::cout << ch;
-//             }
-//             break;
-//         }
-//
-//         case 10: // Exit program
-//             std::exit(0);
-//         break;
-//
-//         default:
-//             std::cerr << syscallCode << std::endl;
-//         break;
-//     }
-// }
-//
-//
-// void ALU::execute(const DecodedInstr& instr, Registers& regs, Memory& mem, uint16_t& pc) {
-//    // std::cout << "ALU executing opcode: 0x" << std::hex << (int)instr.opcode << std::dec << std::endl;
-//
-//     switch (instr.opcode) {
-//         case 0x0: // ADD
-//             regs[instr.rd] = regs[instr.rs1] + regs[instr.rs2];
-//             break;
-//
-//         case 0x1: // LOAD_IMM (e.g., LI)
-//             regs[instr.rd] = instr.immediate;
-//             break;
-//
-//         case 0x2: // SUB
-//             regs[instr.rd] = regs[instr.rs1] - regs[instr.rs2];
-//             break;
-//
-//         case 0x3: // AND
-//             regs[instr.rd] = regs[instr.rs1] & regs[instr.rs2];
-//             break;
-//
-//         case 0x4: // OR
-//             regs[instr.rd] = regs[instr.rs1] | regs[instr.rs2];
-//             break;
-//
-//         case 0x5: // XOR
-//             regs[instr.rd] = regs[instr.rs1] ^ regs[instr.rs2];
-//             break;
-//
-//         case 0x6: // ADDI (corrected to use rs1, not rd)
-//             regs[instr.rd] = regs[instr.rs1] + instr.immediate;
-//             break;
-//
-//         case 0x7: // SHL (logical left shift)
-//             regs[instr.rd] = regs[instr.rs1] << instr.immediate;
-//             break;
-//
-//         case 0x8: // SHR (logical right shift)
-//             regs[instr.rd] = regs[instr.rs1] >> instr.immediate;
-//             break;
-//
-//         case 0x9: // MUL
-//             regs[instr.rd] = regs[instr.rs1] * regs[instr.rs2];
-//             break;
-//
-//         case 0xA: // DIV
-//             if (regs[instr.rs2] == 0)
-//                 throw std::runtime_error("Division by zero");
-//             regs[instr.rd] = regs[instr.rs1] / regs[instr.rs2];
-//             break;
-//
-//         case 0xB: // LOAD (e.g., LW)
-//         {
-//             uint16_t addr = regs[instr.rs1] + instr.immediate;
-//             regs[instr.rd] = mem.readHalfWord(addr);
-//             break;
-//         }
-//
-//         case 0xC: // STORE (e.g., SW)
-//         {
-//             uint16_t addr = regs[instr.rs1] + instr.immediate;
-//             mem.writeHalfWord(addr, regs[instr.rd]);
-//             break;
-//         }
-//
-//         case 0xD: // BEQ
-//             if (regs[instr.rs1] == regs[instr.rs2]) {
-//                 pc += instr.immediate - 2;  // PC already increments by 2 after exec
-//             }
-//             break;
-//
-//         case 0xE: // JAL
-//             regs[instr.rd] = pc + 2;
-//             pc += instr.immediate - 2;
-//             break;
-//
-//         case 0xF: { // ECALL
-//             int syscallCode = regs[10]; // r10
-//             this->handleSysCall(syscallCode, regs, mem);
-//
-//    break;
-//         }
-//
-//         default:
-//            // std::cerr << "ALU: Unsupported opcode 0x" << std::hex << (int)instr.opcode << std::dec << std::endl;
-//             break;
-//     }
-// }
+#include "ALU.h"
+#include <iostream>
+#include <cassert>
+
+void ALU::execute(const DecodedInstruction& instr, Registers& regs, Memory& mem, uint32_t& pc, bool& halted) {
+    switch (instr.format) {
+        case FORMAT_R:     executeRType(instr, regs); break;
+        case FORMAT_I:     executeIType(instr, regs, pc); break;
+        case FORMAT_L:     executeLoad(instr, regs, mem); break;
+        case FORMAT_S:     executeStore(instr, regs, mem); break;
+        case FORMAT_B:     executeBranch(instr, regs, pc); break;
+        case FORMAT_J:     executeJAL(instr, regs, pc); break;
+        case FORMAT_IJ:    executeJALR(instr, regs, pc); break;
+        case FORMAT_U:     
+            if (instr.mnemonic == "LUI") executeLUI(instr, regs);
+            else if (instr.mnemonic == "AUIPC") executeAUIPC(instr, regs, pc);
+            break;
+        case FORMAT_SYS:   executeECALL(regs, mem, halted); break;
+        default:           std::cerr << "Illegal instruction!\n"; halted = true; break;
+    }
+}
+
+void ALU::executeRType(const DecodedInstruction& instr, Registers& regs) {
+    uint32_t rs1 = regs[instr.rs1];
+    uint32_t rs2 = regs[instr.rs2];
+    uint32_t result = 0;
+    if (instr.mnemonic == "ADD")      result = rs1 + rs2;
+    else if (instr.mnemonic == "SUB") result = rs1 - rs2;
+    else if (instr.mnemonic == "SLL") result = rs1 << (rs2 & 0x1F);
+    else if (instr.mnemonic == "SLT") result = (int32_t)rs1 < (int32_t)rs2;
+    else if (instr.mnemonic == "SLTU")result = rs1 < rs2;
+    else if (instr.mnemonic == "XOR") result = rs1 ^ rs2;
+    else if (instr.mnemonic == "SRL") result = rs1 >> (rs2 & 0x1F);
+    else if (instr.mnemonic == "SRA") result = (int32_t)rs1 >> (rs2 & 0x1F);
+    else if (instr.mnemonic == "OR")  result = rs1 | rs2;
+    else if (instr.mnemonic == "AND") result = rs1 & rs2;
+    regs[instr.rd] = result;
+}
+
+void ALU::executeIType(const DecodedInstruction& instr, Registers& regs, uint32_t& pc) {
+    uint32_t rs1 = regs[instr.rs1];
+    int32_t imm = instr.imm;
+    uint32_t result = 0;
+    if (instr.mnemonic == "ADDI")      result = rs1 + imm;
+    else if (instr.mnemonic == "SLTI") result = (int32_t)rs1 < imm;
+    else if (instr.mnemonic == "SLTIU")result = rs1 < (uint32_t)imm;
+    else if (instr.mnemonic == "XORI") result = rs1 ^ imm;
+    else if (instr.mnemonic == "ORI")  result = rs1 | imm;
+    else if (instr.mnemonic == "ANDI") result = rs1 & imm;
+    else if (instr.mnemonic == "SLLI") result = rs1 << (imm & 0x1F);
+    else if (instr.mnemonic == "SRLI") result = rs1 >> (imm & 0x1F);
+    else if (instr.mnemonic == "SRAI") result = (int32_t)rs1 >> (imm & 0x1F);
+    else if (instr.mnemonic == "JALR") { executeJALR(instr, regs, pc); return; }
+    regs[instr.rd] = result;
+}
+
+void ALU::executeLoad(const DecodedInstruction& instr, Registers& regs, Memory& mem) {
+    uint32_t addr = regs[instr.rs1] + instr.imm;
+    if (instr.mnemonic == "LB") {
+        int8_t val = mem.readByte(addr);
+        regs[instr.rd] = int32_t(val);
+    } else if (instr.mnemonic == "LH") {
+        int16_t val = mem.readHalfWord(addr);
+        regs[instr.rd] = int32_t(val);
+    } else if (instr.mnemonic == "LW") {
+        regs[instr.rd] = mem.readWord(addr);
+    } else if (instr.mnemonic == "LBU") {
+        regs[instr.rd] = mem.readByte(addr);
+    } else if (instr.mnemonic == "LHU") {
+        regs[instr.rd] = mem.readHalfWord(addr);
+    }
+}
+
+void ALU::executeStore(const DecodedInstruction& instr, Registers& regs, Memory& mem) {
+    uint32_t addr = regs[instr.rs1] + instr.imm;
+    uint32_t val = regs[instr.rs2];
+    if (instr.mnemonic == "SB") {
+        mem.writeByte(addr, val & 0xFF);
+    } else if (instr.mnemonic == "SH") {
+        mem.writeHalfWord(addr, val & 0xFFFF);
+    } else if (instr.mnemonic == "SW") {
+        mem.writeWord(addr, val);
+    }
+}
+
+void ALU::executeBranch(const DecodedInstruction& instr, Registers& regs, uint32_t& pc) {
+    uint32_t rs1 = regs[instr.rs1];
+    uint32_t rs2 = regs[instr.rs2];
+    bool take = false;
+    if (instr.mnemonic == "BEQ")      take = (rs1 == rs2);
+    else if (instr.mnemonic == "BNE") take = (rs1 != rs2);
+    else if (instr.mnemonic == "BLT") take = ((int32_t)rs1 < (int32_t)rs2);
+    else if (instr.mnemonic == "BGE") take = ((int32_t)rs1 >= (int32_t)rs2);
+    else if (instr.mnemonic == "BLTU")take = (rs1 < rs2);
+    else if (instr.mnemonic == "BGEU")take = (rs1 >= rs2);
+    if (take) pc += instr.imm - 4; // -4 because PC will be incremented by 4 after this
+}
+
+void ALU::executeJAL(const DecodedInstruction& instr, Registers& regs, uint32_t& pc) {
+    regs[instr.rd] = pc + 4;
+    pc += instr.imm - 4;
+}
+
+void ALU::executeJALR(const DecodedInstruction& instr, Registers& regs, uint32_t& pc) {
+    uint32_t t = pc + 4;
+    pc = (regs[instr.rs1] + instr.imm) & ~1;
+    regs[instr.rd] = t;
+    pc -= 4; // Because PC will be incremented by 4 after this
+}
+
+void ALU::executeLUI(const DecodedInstruction& instr, Registers& regs) {
+    regs[instr.rd] = instr.imm << 12;
+}
+
+void ALU::executeAUIPC(const DecodedInstruction& instr, Registers& regs, uint32_t pc) {
+    regs[instr.rd] = pc + (instr.imm << 12);
+}
+
+void ALU::executeECALL(Registers& regs, Memory& mem, bool& halted) {
+    uint32_t syscall = regs[17]; // a7
+    if (syscall == 1) { // print int
+        std::cout << (int32_t)regs[10]; // a0
+    } else if (syscall == 4) { // print string
+        uint32_t addr = regs[10];
+        char c;
+        while ((c = (char)mem.readByte(addr++)) != '\0')
+            std::cout << c;
+    } else if (syscall == 10) { // exit
+        halted = true;
+    } else {
+        std::cerr << "Unknown ECALL: " << syscall << std::endl;
+        halted = true;
+    }
+}
