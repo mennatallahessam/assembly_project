@@ -4,6 +4,7 @@
 #include "Decoder.h"
 #include<iomanip>
 #include <limits>
+using namespace std;
 std::vector<uint16_t> readBinaryFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     std::vector<uint16_t> instructions;
@@ -61,9 +62,15 @@ void printDecodedInstruction(const DecodedInstruction& d, uint16_t pc) {
                       << " (0x" << std::hex << std::setw(4) << std::setfill('0') << target << ")";
             break;
         }
-        case FORMAT_U:
-            std::cout << " x" << (int)d.rd << ", imm " << std::dec << static_cast<int16_t>(d.imm);
+        case FORMAT_U: {
+                std::cout << " x" << std::dec << (int)d.rd
+                          << ", 0x" << std::hex << d.imm
+                          << " (" << std::dec << d.raw_imm << ")";
+
+
             break;
+        }
+
         case FORMAT_SYS:
             std::cout << " svc " << std::hex << d.imm;
             break;
@@ -71,6 +78,7 @@ void printDecodedInstruction(const DecodedInstruction& d, uint16_t pc) {
             std::cout << " (unknown format)";
             break;
     }
+
     std::cout << std::endl;
 }
 int main() {

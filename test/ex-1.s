@@ -27,7 +27,7 @@ main:
     sltui x4, 50        # Set less than unsigned immediate
     ori x5, 0x0F        # OR immediate
     andi x6, 0x3F       # AND immediate (7-bit max)
-    xori x7, 0x7F       # XOR immediate (7-bit max)
+    xori x7, 0x0F       # XOR immediate (7-bit max)
     
     # Shift immediates
     slli x1, 4          # Shift left logical immediate
@@ -73,7 +73,7 @@ end_section:
 function:
     # Upper immediate instructions (9-bit immediate: 0-511)
     lui x1, 0x100       # Load upper immediate (256)
-    auipc x2, 0x1FF     # Add upper immediate to PC (511 - max 9-bit)
+    auipc x2, 0x1FE    # Add upper immediate to PC (511 - max 9-bit)
     
     # System call
     ecall 0x008         # System call

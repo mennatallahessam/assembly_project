@@ -1,6 +1,8 @@
 #include "Decoder.h"
 #include"utils.h"
-
+#include<iostream>
+using namespace std;
+#include<iomanip>
 // The input of this class should be a 16 bit
 // inbstructiuon word fetched from memory and it outputs
 // a decoded instruction struct containing
@@ -91,12 +93,25 @@ DecodedInstruction Decoder::decode(uint16_t inst) {
             d.mnemonic = iTypeOpToString(op);
 
             if (op == ITOP_SLLI || op == ITOP_SRLI || op == ITOP_SRAI) {
-                // For shift immediates: imm[3:0] = bits 9-12, unsigned
-                d.imm = inst >> 9 & 0xF;
+                // Shift immediates are 4-bit unsigned: [0, 15]
+                d.imm = (inst >> 9) & 0xF;
+                if (d.imm > 15) {
+                    d.mnemonic = "INVALID_SHIFT_IMM";
+                    std::cerr << "Error: Shift amount " << (int)d.imm
+                              << " out of range (0-15) for shift instruction.\n";
+                }
             } else {
-                // For normal immediates: imm7 signed bits 9-15
+                // Signed 7-bit immediate: [-64, +63]
                 uint8_t imm7_raw = (inst >> 9) & 0x7F;
-                d.imm = signExtend7(imm7_raw);
+                int16_t imm = signExtend7(imm7_raw);
+
+                if (imm < -64 || imm > 63) {
+                    d.mnemonic = "INVALID_IMM";
+                    std::cerr << "Error: Immediate " << imm
+                              << " out of 7-bit signed range [-64, 63] for I-type instruction.\n";
+                }
+
+                d.imm = imm;
             }
             break;
         }
@@ -137,13 +152,23 @@ DecodedInstruction Decoder::decode(uint16_t inst) {
             break;
         }
         case FORMAT_U: {
-            d.rd = (inst >> 6) & 0x7;
-            d.imm = decodeUTypeImmediate(inst);
+            bool flag = (inst >> 15) & 0x1;
+            uint16_t imm_high = (inst >> 9) & 0x3F;   // 6 bits
+            uint16_t imm_low  = (inst >> 3) & 0x7;    // 3 bits
+            uint16_t raw_imm  = (imm_high << 3) | imm_low;
 
-            UTypeOp op = decodeUTypeOperation(inst);
-            d.mnemonic = uTypeOpToString(op);
+            d.rd = (inst >> 6) & 0x7;
+            d.mnemonic = flag ? "AUIPC" : "LUI";
+            d.imm = raw_imm << 7;  // shifted full immediate
+            d.uimm = d.imm;
+
+            // Store raw immediate for printing
+            d.raw_imm = raw_imm;
+
             break;
         }
+
+
         case FORMAT_SYS: {
             d.syscall_num = decodeSysCallNumber(inst);
 
@@ -337,20 +362,18 @@ std::string Decoder::jTypeOpToString(JTypeOp op) {
     }
 }
 UTypeOp Decoder::decodeUTypeOperation(uint16_t inst) {
-    bool flag = (inst >> 15) & 0x1;
+    bool flag = (inst >> 15) & 0x1;  // MSB indicates AUIPC if set, else LUI
     if (flag) return UTOP_AUIPC;
     else      return UTOP_LUI;
 }
+
+
 uint16_t Decoder::decodeUTypeImmediate(uint16_t inst) {
-    // imm[15:10] bits 14:9
-    uint16_t imm_high = (inst >> 9) & 0x3F;   // 6 bits
-    // imm[9:7] bits 5:3
-    uint16_t imm_mid  = (inst >> 3) & 0x7;    // 3 bits
-
-    uint16_t imm = (imm_high << 6) | imm_mid; // imm[15:7]
-
-    return imm << 7; // shift left 7 bits
+    uint16_t imm = (inst >> 7) & 0x1FF;  // Extract 9-bit immediate (bits 15:7)
+    return imm << 7;                     // Shift left 7 bits as per spec
 }
+
+
 std::string Decoder::uTypeOpToString(UTypeOp op) {
     switch (op) {
         case UTOP_LUI:   return "LUI";

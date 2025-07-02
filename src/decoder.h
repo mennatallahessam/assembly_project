@@ -75,6 +75,8 @@ struct DecodedInstruction {
     InstructionFormat format;
     uint8_t rd, rs1, rs2;
     int16_t imm;            // for immediate values / offsets
+    uint16_t uimm;
+    uint16_t raw_imm; // separate field for unsigned immediates (U-type)
     std::string mnemonic;
     uint16_t syscall_num;   // for SYS-Type instructions
 };
@@ -113,6 +115,8 @@ public:
     UTypeOp decodeUTypeOperation(uint16_t inst);
 
     uint16_t decodeUTypeImmediate(uint16_t inst);
+
+    int16_t signExtend9bit(uint16_t imm9);
 
     std::string uTypeOpToString(UTypeOp op);
 
