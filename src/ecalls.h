@@ -22,3 +22,12 @@
 // };
 //
 // #endif
+#pragma once
+#include "registers.h"
+#include "memory.h"
+#include "graphics.h"
+
+class Ecalls {
+public:
+    void handle(Registers& regs, Memory& mem, bool& halted, Graphics& gfx);
+};
