@@ -86,3 +86,66 @@
 // void Ecalls::programExit() {
 //     std::cout << std::endl << "Program exited." << std::endl;
 // }
+#include "ecalls.h"
+#include <iostream>
+#include <string>
+
+void Ecalls::handle(Registers& regs, Memory& mem, bool& halted, Graphics& gfx) {
+    uint16_t service = regs[0]; // a0 or service reg, per ZX16 calling convention
+    switch (service) {
+        case 1: { // Read String
+            uint16_t addr = regs[0];
+            uint16_t maxlen = regs[1];
+            std::string input;
+            std::getline(std::cin, input);
+            if (input.length() > maxlen) input.resize(maxlen);
+            for (size_t i = 0; i < input.length(); ++i)
+                mem.writeByte(addr + i, input[i]);
+            mem.writeByte(addr + input.length(), 0);
+            regs[0] = input.length();
+            break;
+        }
+        case 2: { // Read Integer
+            int val;
+            std::cin >> val;
+            regs[0] = val;
+            break;
+        }
+        case 3: { // Print String
+            uint16_t addr = regs[0];
+            char c;
+            while ((c = mem.readByte(addr++)) != '\0')
+                std::cout << c;
+            break;
+        }
+        case 4: // Play tone
+            // Implement as needed for your environment or stub
+            break;
+        case 5: // Set audio volume
+            // Implement as needed for your environment or stub
+            break;
+        case 6: // Stop Audio playback
+            // Implement as needed for your environment or stub
+            break;
+        case 7: // Read the keyboard
+            // Implement as needed for your environment or stub
+            break;
+        case 8: // Registers Dump
+            regs.dump();
+            break;
+        case 9: { // Memory Dump
+            uint16_t addr = regs[0];
+            uint16_t count = regs[1];
+            for (uint16_t i = 0; i < count; ++i)
+                std::cout << std::hex << int(mem.readByte(addr + i)) << " ";
+            std::cout << std::endl;
+            break;
+        }
+        case 10: // Program Exit
+            halted = true;
+            break;
+        default:
+            std::cerr << "Unknown ecall service: " << service << std::endl;
+            halted = true;
+    }
+}
