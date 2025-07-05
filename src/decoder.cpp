@@ -1,18 +1,8 @@
 #include "Decoder.h"
-#include"utils.h"
-#include<iostream>
+#include "utils.h"
+#include <iostream>
+#include <iomanip>
 using namespace std;
-#include<iomanip>
-// The input of this class should be a 16 bit
-// inbstructiuon word fetched from memory and it outputs
-// a decoded instruction struct containing
-// Instruction format (R, I, B, etc.)
-//
-// Decoded fields (rd, rs1, rs2, immediate, syscall_num, etc.)
-//
-// Mnemonic (for debugging/logging)
-//
-// Possibly an enumerated opcode or operation code (to pass to the ALU or execution unit)
 
 InstructionFormat Decoder::getInstructionFormat(uint16_t inst) {
     uint8_t opcode = inst & 0x7; // bits [2:0]
@@ -30,8 +20,9 @@ InstructionFormat Decoder::getInstructionFormat(uint16_t inst) {
 }
 
 RTypeOp Decoder::decodeRTypeOperation(uint16_t inst) {
-    uint8_t funct4 = (inst >> 12) & 0xF;
-    uint8_t func3  = (inst >> 3)  & 0x7;
+    // Extract function fields according to ZX16 R-type format
+    uint8_t funct4 = (inst >> 12) & 0xF;  // bits [15:12]
+    uint8_t func3  = (inst >> 3)  & 0x7;  // bits [5:3]
     uint8_t key = (funct4 << 3) | func3;
 
     switch (key) {
@@ -71,159 +62,27 @@ std::string Decoder::rTypeOpToString(RTypeOp op) {
     }
 }
 
-DecodedInstruction Decoder::decode(uint16_t inst) {
-    DecodedInstruction d;
-    d.raw = inst;
-    d.format = getInstructionFormat(inst);
-
-    switch (d.format) {
-        case FORMAT_R: {
-            d.rd   = (inst >> 6) & 0x7;
-            d.rs1  = d.rd; // shared in R-Type
-            d.rs2  = (inst >> 9) & 0x7;
-            auto op = decodeRTypeOperation(inst);
-            d.mnemonic = rTypeOpToString(op);
-            break;
-        }
-        case FORMAT_I: {
-            d.rd = (inst >> 6) & 0x7;
-            d.rs1 = (inst >> 3) & 0x7;
-
-            ITypeOp op = decodeITypeOperation(inst);
-            d.mnemonic = iTypeOpToString(op);
-
-            if (op == ITOP_SLLI || op == ITOP_SRLI || op == ITOP_SRAI) {
-                // Shift immediates are 4-bit unsigned: [0, 15]
-                d.imm = (inst >> 9) & 0xF;
-                if (d.imm > 15) {
-                    d.mnemonic = "INVALID_SHIFT_IMM";
-                    std::cerr << "Error: Shift amount " << (int)d.imm
-                              << " out of range (0-15) for shift instruction.\n";
-                }
-            } else {
-                // Signed 7-bit immediate: [-64, +63]
-                uint8_t imm7_raw = (inst >> 9) & 0x7F;
-                int16_t imm = signExtend7(imm7_raw);
-
-                if (imm < -64 || imm > 63) {
-                    d.mnemonic = "INVALID_IMM";
-                    std::cerr << "Error: Immediate " << imm
-                              << " out of 7-bit signed range [-64, 63] for I-type instruction.\n";
-                }
-
-                d.imm = imm;
-            }
-            break;
-        }
-
-        case FORMAT_B: {
-            d.rs1 = (inst >> 6) & 0x7;
-            d.rs2 = (inst >> 9) & 0x7; // ignored for BZ/BNZ but decoded anyway
-            d.imm = decodeBTypeOffset(inst);
-
-            BTypeOp op = decodeBTypeOperation(inst);
-            d.mnemonic = bTypeOpToString(op);
-            break;
-        }
-        case FORMAT_S: {
-            d.rs2 = (inst >> 9) & 0x7;  // data to store
-            d.rs1 = (inst >> 6) & 0x7;  // base address
-            d.imm = decodeSTypeOffset(inst);
-
-            STypeOp op = decodeSTypeOperation(inst);
-            d.mnemonic = sTypeOpToString(op);
-            break;
-        }
-        case FORMAT_L: {
-            d.rs2 = (inst >> 9) & 0x7;   // base register
-            d.rd  = (inst >> 6) & 0x7;   // destination register
-            d.imm = decodeLTypeOffset(inst);
-
-            LTypeOp op = decodeLTypeOperation(inst);
-            d.mnemonic = lTypeOpToString(op);
-            break;
-        }
-        case FORMAT_J: {
-            d.rd = (inst >> 6) & 0x7; // link register for JAL
-            d.imm = decodeJTypeOffset(inst);
-
-            JTypeOp op = decodeJTypeOperation(inst);
-            d.mnemonic = jTypeOpToString(op);
-            break;
-        }
-        case FORMAT_U: {
-            bool flag = (inst >> 15) & 0x1;
-            uint16_t imm_high = (inst >> 9) & 0x3F;   // 6 bits
-            uint16_t imm_low  = (inst >> 3) & 0x7;    // 3 bits
-            uint16_t raw_imm  = (imm_high << 3) | imm_low;
-
-            d.rd = (inst >> 6) & 0x7;
-            d.mnemonic = flag ? "AUIPC" : "LUI";
-            d.imm = raw_imm << 7;  // shifted full immediate
-            d.uimm = d.imm;
-
-            // Store raw immediate for printing
-            d.raw_imm = raw_imm;
-
-            break;
-        }
-
-
-        case FORMAT_SYS: {
-            d.syscall_num = decodeSysCallNumber(inst);
-
-            SysTypeOp op = decodeSysTypeOperation(inst);
-            d.mnemonic = sysTypeOpToString(op);
-            break;
-        }
-
-        default:
-            d.mnemonic = "UNKNOWN";
-    }
-
-    return d;
-}
-ITypeOp Decoder:: decodeITypeOperation(uint16_t inst) {
+ITypeOp Decoder::decodeITypeOperation(uint16_t inst) {
     uint8_t imm7 = (inst >> 9) & 0x7F;         // imm[6:0]
     uint8_t imm_shift_type = (imm7 >> 4) & 0x7; // imm[6:4]
-    uint8_t shift_amount = imm7 & 0xF;           // imm[3:0]
-
     uint8_t funct3 = (inst >> 3) & 0x7;
 
     switch (funct3) {
-        case 0b000:
-
-                return ITOP_ADDI;
-
-        case 0b001:
-            return ITOP_SLTI;
-
-        case 0b010:
-            return ITOP_SLTUI;
-
+        case 0b000: return ITOP_ADDI;
+        case 0b001: return ITOP_SLTI;
+        case 0b010: return ITOP_SLTUI;
         case 0b011:
-            if (imm_shift_type == 0b010)  // assuming 010 = SRLI
+            if (imm_shift_type == 0b010)
                 return ITOP_SRLI;
-            else if (imm_shift_type == 0b100) // assuming 011 = SRAI
+            else if (imm_shift_type == 0b100)
                 return ITOP_SRAI;
             else
-            return ITOP_SLLI;
-
-
-        case 0b100:
-            return ITOP_ORI;
-
-        case 0b101:
-            return ITOP_ANDI;
-
-        case 0b110:
-            return ITOP_XORI;
-
-        case 0b111:  // if you have LI as a distinct funct3 or encoding
-            return ITOP_LI;
-
-        default:
-            return ITOP_UNKNOWN;
+                return ITOP_SLLI;
+        case 0b100: return ITOP_ORI;
+        case 0b101: return ITOP_ANDI;
+        case 0b110: return ITOP_XORI;
+        case 0b111: return ITOP_LI;
+        default:    return ITOP_UNKNOWN;
     }
 }
 
@@ -242,9 +101,9 @@ std::string Decoder::iTypeOpToString(ITypeOp op) {
         default:         return "UNKNOWN_I";
     }
 }
+
 BTypeOp Decoder::decodeBTypeOperation(uint16_t inst) {
     uint8_t func3 = (inst >> 3) & 0x7;
-
     switch (func3) {
         case 0b000: return BTOP_BEQ;
         case 0b001: return BTOP_BNE;
@@ -257,6 +116,7 @@ BTypeOp Decoder::decodeBTypeOperation(uint16_t inst) {
         default:    return BTOP_UNKNOWN;
     }
 }
+
 std::string Decoder::bTypeOpToString(BTypeOp op) {
     switch (op) {
         case BTOP_BEQ:  return "BEQ";
@@ -270,41 +130,32 @@ std::string Decoder::bTypeOpToString(BTypeOp op) {
         default:        return "UNKNOWN_B";
     }
 }
-int16_t Decoder::decodeBTypeOffset(uint16_t inst) {
-    // Extract imm[4:1]
-    uint8_t imm_4_1 = (inst >> 12) & 0xF; // bits 15:12
-    // imm[0] = 0 (word aligned, so multiply offset by 2)
-    // imm is 5-bit signed (bit 4 is sign bit)
 
-    // Combine and sign extend:
+int16_t Decoder::decodeBTypeOffset(uint16_t inst) {
+    uint8_t imm_4_1 = (inst >> 12) & 0xF; // bits 15:12
     int16_t offset = (imm_4_1 << 1); // imm[4:1] + imm[0]=0
 
-    // Sign bit is bit 5 (bit 4 of imm_4_1)
+    // Sign extend from 5 bits to 16 bits
     if (offset & 0x10) {
-        // Negative number: sign extend 5 bits to 16 bits
-        offset |= 0xFFE0; // set upper bits to 1
+        offset |= 0xFFE0;
     }
-
-    return offset; // in bytes (word aligned)
+    return offset;
 }
+
 STypeOp Decoder::decodeSTypeOperation(uint16_t inst) {
     uint8_t func3 = (inst >> 3) & 0x7;
-
     switch (func3) {
         case 0b000: return STOP_SB;
         case 0b001: return STOP_SW;
         default:    return STOP_UNKNOWN;
     }
 }
-int16_t Decoder::signExtend4(uint8_t imm4) {
-    // imm4 is 4-bit signed (bit 3 is sign bit)
-    return (imm4 & 0x8) ? (imm4 | 0xFFF0) : imm4;
-}
 
 int16_t Decoder::decodeSTypeOffset(uint16_t inst) {
     uint8_t imm4 = (inst >> 12) & 0xF;
     return signExtend4(imm4);
 }
+
 std::string Decoder::sTypeOpToString(STypeOp op) {
     switch (op) {
         case STOP_SB: return "SB";
@@ -312,9 +163,9 @@ std::string Decoder::sTypeOpToString(STypeOp op) {
         default:      return "UNKNOWN_S";
     }
 }
+
 LTypeOp Decoder::decodeLTypeOperation(uint16_t inst) {
     uint8_t func3 = (inst >> 3) & 0x7;
-
     switch (func3) {
         case 0b000: return LTOP_LB;
         case 0b001: return LTOP_LW;
@@ -322,11 +173,12 @@ LTypeOp Decoder::decodeLTypeOperation(uint16_t inst) {
         default:    return LTOP_UNKNOWN;
     }
 }
-// Assuming signExtend4 is already defined
+
 int16_t Decoder::decodeLTypeOffset(uint16_t inst) {
     uint8_t imm4 = (inst >> 12) & 0xF;
     return signExtend4(imm4);
 }
+
 std::string Decoder::lTypeOpToString(LTypeOp op) {
     switch (op) {
         case LTOP_LB:  return "LB";
@@ -335,71 +187,189 @@ std::string Decoder::lTypeOpToString(LTypeOp op) {
         default:       return "UNKNOWN_L";
     }
 }
+
 JTypeOp Decoder::decodeJTypeOperation(uint16_t inst) {
     bool linkFlag = (inst >> 15) & 0x1;
-
-    if (linkFlag)
-        return JTOP_JAL;
-    else
-        return JTOP_J;
+    return linkFlag ? JTOP_JAL : JTOP_J;
 }
+
 int16_t Decoder::decodeJTypeOffset(uint16_t inst) {
     uint16_t imm_high = (inst >> 9) & 0x3F;  // 6 bits imm[9:4]
     uint16_t imm_low  = (inst >> 3) & 0x7;   // 3 bits imm[3:1]
-
     uint16_t imm = (imm_high << 4) | (imm_low << 1);
 
-    // Sign-extend 10-bit immediate (bit 9 is sign bit)
+    // Sign-extend 10-bit immediate
     if (imm & (1 << 9))
-        imm |= 0xFC00; // set upper bits to 1
+        imm |= 0xFC00;
     return static_cast<int16_t>(imm);
 }
+
 std::string Decoder::jTypeOpToString(JTypeOp op) {
     switch (op) {
         case JTOP_J:   return "J";
         case JTOP_JAL: return "JAL";
-        default:      return "UNKNOWN_J";
+        default:       return "UNKNOWN_J";
     }
 }
-UTypeOp Decoder::decodeUTypeOperation(uint16_t inst) {
-    bool flag = (inst >> 15) & 0x1;  // MSB indicates AUIPC if set, else LUI
-    if (flag) return UTOP_AUIPC;
-    else      return UTOP_LUI;
-}
 
+UTypeOp Decoder::decodeUTypeOperation(uint16_t inst) {
+    bool flag = (inst >> 15) & 0x1;
+    return flag ? UTOP_AUIPC : UTOP_LUI;
+}
 
 uint16_t Decoder::decodeUTypeImmediate(uint16_t inst) {
-    uint16_t imm = (inst >> 7) & 0x1FF;  // Extract 9-bit immediate (bits 15:7)
-    return imm << 7;                     // Shift left 7 bits as per spec
+    uint16_t imm = (inst >> 7) & 0x1FF;
+    return imm << 7;
 }
-
 
 std::string Decoder::uTypeOpToString(UTypeOp op) {
     switch (op) {
         case UTOP_LUI:   return "LUI";
         case UTOP_AUIPC: return "AUIPC";
-        default:        return "UNKNOWN_U";
+        default:         return "UNKNOWN_U";
     }
 }
+
 SysTypeOp Decoder::decodeSysTypeOperation(uint16_t inst) {
     uint8_t func3 = (inst >> 3) & 0x7;
-    if (func3 == 0b000) {
-        return SYSOP_ECALL;
-    }
-    return SYSOP_UNKNOWN;
+    return (func3 == 0b000) ? SYSOP_ECALL : SYSOP_UNKNOWN;
 }
+
 uint16_t Decoder::decodeSysCallNumber(uint16_t inst) {
-    return (inst >> 6) & 0x3FF;  // bits [15:6]
+    return (inst >> 6) & 0x3FF; // bits [15:6]
 }
+
 std::string Decoder::sysTypeOpToString(SysTypeOp op) {
     switch (op) {
-        case SYSOP_ECALL:  return "ECALL";
+        case SYSOP_ECALL: return "ECALL";
         default:          return "UNKNOWN_SYS";
     }
 }
-int16_t Decoder:: signExtend7(uint8_t imm7) {
-    if (imm7 & 0x40) // if bit 6 (sign bit) is set
-        return (int16_t)(imm7 | 0xFF80); // extend with 1s on top
+
+// Utility functions
+int16_t Decoder::signExtend4(uint8_t imm4) {
+    return (imm4 & 0x8) ? (imm4 | 0xFFF0) : imm4;
+}
+
+int16_t Decoder::signExtend7(uint8_t imm7) {
+    return (int16_t)((int8_t)(imm7 << 1)) >> 1;
+}
+
+int16_t Decoder::signExtend10(uint16_t imm10) {
+    if (imm10 & 0x200) // if bit 9 (sign bit) is set
+        return (int16_t)(imm10 | 0xFC00);
     else
-        return (int16_t)(imm7 & 0x7F);
+        return (int16_t)(imm10 & 0x3FF);
+}
+
+// MAIN DECODE FUNCTION - CORRECTED FOR ZX16
+DecodedInstruction Decoder::decode(uint16_t inst) {
+    DecodedInstruction d;
+    d.raw = inst;
+    d.format = getInstructionFormat(inst);
+
+    switch (d.format) {
+        case FORMAT_R: {
+            // ZX16 R-type format: [15:12] funct4, [11:9] rs2, [8:6] rd/rs1, [5:3] func3, [2:0] opcode
+            d.rd  = (inst >> 6) & 0x7;  // rd/rs1 is both destination and first source
+            d.rs1 = d.rd;               // Same as rd for two-operand semantics
+            d.rs2 = (inst >> 9) & 0x7;  // Second source register
+
+            d.r_op = decodeRTypeOperation(inst);
+            d.mnemonic = rTypeOpToString(d.r_op);
+
+            // Debug output to check register extraction
+            // printf("R-type: inst=0x%04x, rd=%d, rs1=%d, rs2=%d, op=%s\n",
+            //        inst, d.rd, d.rs1, d.rs2, d.mnemonic.c_str());
+            break;
+        }
+
+        case FORMAT_I: {
+            // ZX16 I-type format: [15:9] imm7, [8:6] rd, [5:3] func3, [2:0] opcode
+            d.rd = (inst >> 6) & 0x7;
+            d.rs1 = d.rd;  // Two-operand: rd is both destination and first source
+            d.i_op = decodeITypeOperation(inst);
+            d.mnemonic = iTypeOpToString(d.i_op);
+
+            if (d.i_op == ITOP_SLLI || d.i_op == ITOP_SRLI || d.i_op == ITOP_SRAI) {
+                d.imm = (inst >> 9) & 0xF; // 4-bit shift amount
+                d.uimm = d.imm;
+            } else {
+                uint8_t imm7_raw = (inst >> 9) & 0x7F;
+                d.imm = signExtend7(imm7_raw);
+                d.uimm = d.imm;
+            }
+            break;
+        }
+
+        case FORMAT_B: {
+            // ZX16 B-type format: [15:12] imm[4:1], [11:9] rs2, [8:6] rs1, [5:3] func3, [2:0] opcode
+            d.rs1 = (inst >> 6) & 0x7;
+            d.rs2 = (inst >> 9) & 0x7;
+            d.imm = decodeBTypeOffset(inst);
+            d.b_op = decodeBTypeOperation(inst);
+            d.mnemonic = bTypeOpToString(d.b_op);
+            break;
+        }
+
+        case FORMAT_S: {
+            // ZX16 S-type format: [15:12] imm[3:0], [11:9] rs2, [8:6] rs1, [5:3] func3, [2:0] opcode
+            d.rs1 = (inst >> 6) & 0x7;  // base address register
+            d.rs2 = (inst >> 9) & 0x7;  // data to store
+            d.imm = decodeSTypeOffset(inst);
+            d.s_op = decodeSTypeOperation(inst);
+            d.mnemonic = sTypeOpToString(d.s_op);
+            break;
+        }
+
+        case FORMAT_L: {
+            // ZX16 L-type format: [15:12] imm[3:0], [11:9] rs2, [8:6] rd, [5:3] func3, [2:0] opcode
+            d.rd  = (inst >> 6) & 0x7;   // destination register
+            d.rs2 = (inst >> 9) & 0x7;   // base address register
+            d.imm = decodeLTypeOffset(inst);
+            d.l_op = decodeLTypeOperation(inst);
+            d.mnemonic = lTypeOpToString(d.l_op);
+            break;
+        }
+
+        case FORMAT_J: {
+            // ZX16 J-type format: [15] link, [14:9] imm[9:4], [8:6] rd, [5:3] imm[3:1], [2:0] opcode
+            d.rd = (inst >> 6) & 0x7;
+            d.imm = decodeJTypeOffset(inst);
+            d.j_op = decodeJTypeOperation(inst);
+            d.mnemonic = jTypeOpToString(d.j_op);
+            break;
+        }
+
+        case FORMAT_U: {
+            // ZX16 U-type format: [15] flag, [14:9] imm[8:3], [8:6] rd, [5:3] imm[2:0], [2:0] opcode
+            d.rd = (inst >> 6) & 0x7;
+
+            uint16_t imm_high = (inst >> 9) & 0x3F;   // 6 bits [14:9]
+            uint16_t imm_low  = (inst >> 3) & 0x7;    // 3 bits [5:3]
+            uint16_t raw_imm  = (imm_high << 3) | imm_low;
+
+            d.u_op = decodeUTypeOperation(inst);
+            d.mnemonic = uTypeOpToString(d.u_op);
+            d.imm = raw_imm << 7;  // Upper immediate shifted left by 7
+            d.uimm = d.imm;
+            d.raw_imm = raw_imm;
+            break;
+        }
+
+        case FORMAT_SYS: {
+            // ZX16 SYS-type format: [15:6] syscall_num, [5:3] func3, [2:0] opcode
+            d.syscall_num = decodeSysCallNumber(inst);
+            d.sys_op = decodeSysTypeOperation(inst);
+            d.mnemonic = sysTypeOpToString(d.sys_op);
+            d.imm = d.syscall_num;
+            break;
+        }
+
+        default:
+            d.mnemonic = "UNKNOWN";
+            break;
+    }
+
+    return d;
 }

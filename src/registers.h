@@ -34,6 +34,11 @@ public:
     // Utility functions
     void reset();
     void dump() const;
+
+    uint16_t get(int idx) const;
+
+    void set(int idx, uint16_t val);
+
     std::string getRegisterName(int idx) const;
     int getRegisterIndex(const std::string& name) const;
 
@@ -42,6 +47,10 @@ public:
     private:
         std::string message;
     public:
+        void setPC(uint16_t val);
+
+        uint16_t getPC() const;
+
         RegisterException(const std::string& msg) : message(msg) {}
         const char* what() const noexcept override { return message.c_str(); }
     };

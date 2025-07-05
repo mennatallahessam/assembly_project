@@ -97,3 +97,11 @@ void Registers::dump() const {
     }
     std::cout << std::endl;
 }
+uint16_t Registers::get(int idx) const {
+    return (*this)[idx];
+}
+
+void Registers::set(int idx, uint16_t val) {
+    (*this)[idx] = val;
+}
+

@@ -4,55 +4,52 @@
 #include <cstdint>
 #include <stdexcept>
 
+const uint32_t MEMORY_SIZE = 65536; // 64KB address space
+
+// Custom exception classes
+class AddressOutOfBoundsException : public std::runtime_error {
+public:
+    AddressOutOfBoundsException(uint32_t addr)
+        : std::runtime_error("Address out of bounds: 0x" + std::to_string(addr)) {}
+};
+
+class AddressMisalignedException : public std::runtime_error {
+public:
+    AddressMisalignedException(uint32_t addr, uint32_t alignment)
+        : std::runtime_error("Address misaligned: 0x" + std::to_string(addr) +
+                           " (required alignment: " + std::to_string(alignment) + ")") {}
+};
+
 class Memory {
 private:
-    static const uint32_t MEMORY_SIZE = 65536; // 64KB for embedded system
     uint8_t data[MEMORY_SIZE];
-    
-    // Helper function to check bounds
+
     void checkBounds(uint32_t addr, uint32_t size) const;
-    
+
 public:
-    // Constructor
     Memory();
-    
-    // Byte operations (always aligned)
+
+    void reset();
+
+    // Original method names (descriptive)
     uint8_t readByte(uint32_t addr) const;
     void writeByte(uint32_t addr, uint8_t val);
-    
-    // Halfword operations (16-bit, must be 2-byte aligned)
+
     uint16_t readHalfWord(uint32_t addr) const;
     void writeHalfWord(uint32_t addr, uint16_t val);
-    
-    // Word operations (32-bit, must be 4-byte aligned)
-    uint32_t readWord(uint32_t addr) const;
-    void writeWord(uint32_t addr, uint32_t val);
-    
-    // Utility functions
-    void reset();
-    uint32_t getSize() const { return MEMORY_SIZE; }
-    
-    // Exception classes for RV32I compliance
-    class MemoryException : public std::exception {
-    protected:
-        std::string message;
-    public:
-        MemoryException(const std::string& msg) : message(msg) {}
-        const char* what() const noexcept override { return message.c_str(); }
-    };
-    
-    class AddressMisalignedException : public MemoryException {
-    public:
-        AddressMisalignedException(uint32_t addr, uint32_t alignment) 
-            : MemoryException("Address 0x" + std::to_string(addr) + 
-                            " is not aligned to " + std::to_string(alignment) + " bytes") {}
-    };
-    
-    class AddressOutOfBoundsException : public MemoryException {
-    public:
-        AddressOutOfBoundsException(uint32_t addr) 
-            : MemoryException("Address 0x" + std::to_string(addr) + " is out of bounds") {}
-    };
+
+    uint16_t readWord(uint32_t addr) const;
+    void writeWord(uint32_t addr, uint16_t val);
+
+    // Compatibility methods for main() function
+    uint16_t load16(uint32_t addr) const;
+    void store16(uint32_t addr, uint16_t val);
+
+    uint8_t load8(uint32_t addr) const;
+    void store8(uint32_t addr, uint8_t val);
+
+    uint32_t load32(uint32_t addr) const;
+    void store32(uint32_t addr, uint32_t val);
 };
 
 #endif // MEMORY_H
