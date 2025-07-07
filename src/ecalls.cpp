@@ -185,9 +185,10 @@ EcallResult Ecalls::playTone(const EcallContext& ctx, Memory& mem, graphics& gfx
     uint16_t freq = ctx.a0;
     uint16_t duration = ctx.a1;
 
-    // TODO: Implement actual audio playback through graphics subsystem
+    gfx.playSound(freq, duration); // implement this in graphics
     return EcallResult(true, 0, false);
 }
+
 
 EcallResult Ecalls::setAudioVolume(const EcallContext& ctx, Memory& mem, graphics& gfx) {
     uint16_t volume = ctx.a0;
@@ -196,21 +197,22 @@ EcallResult Ecalls::setAudioVolume(const EcallContext& ctx, Memory& mem, graphic
         return EcallResult(false, 0, false, "Volume must be 0-255");
     }
 
-    // TODO: Implement actual volume control
+    gfx.setVolume(volume); // implement in graphics class
     return EcallResult(true, 0, false);
 }
+
 
 EcallResult Ecalls::stopAudio(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-    // TODO: Implement actual audio stopping
+    gfx.stopSound(); // implement in graphics class
     return EcallResult(true, 0, false);
 }
+
 
 EcallResult Ecalls::readKeyboard(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-    // TODO: Implement keyboard reading through graphics subsystem
-
-    // For now, return 0 (no key pressed)
-    return EcallResult(true, 0, false);
+    uint16_t key = gfx.getKeyPressed(); // implement in graphics class
+    return EcallResult(true, key, false);
 }
+
 
 EcallResult Ecalls::registersDump(const EcallContext& ctx, const Registers& regs) {
     std::cout << "\n=== REGISTER DUMP ===" << std::endl;
