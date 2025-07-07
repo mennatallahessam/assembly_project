@@ -48,8 +48,8 @@ public:
     uint8_t load8(uint32_t addr) const;
     void store8(uint32_t addr, uint8_t val);
 
-    uint32_t load32(uint32_t addr) const;
-    void store32(uint32_t addr, uint32_t val);
+    // uint32_t load32(uint32_t addr) const;
+    // void store32(uint32_t addr, uint32_t val);
 };
 
 #endif // MEMORY_H
