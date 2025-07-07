@@ -89,11 +89,11 @@ void Memory::store8(uint32_t addr, uint8_t val) {
     writeByte(addr, val);
 }
 
-uint32_t Memory::load32(uint32_t addr) const {
-    return readWord(addr);
-}
+// uint32_t Memory::load32(uint32_t addr) const {
+//     return readWord(addr);
+// }
 
-void Memory::store32(uint32_t addr, uint32_t val) {
-    writeWord(addr, val);
-}
+// void Memory::store32(uint32_t addr, uint32_t val) {
+//     writeWord(addr, val);
+// }
 
