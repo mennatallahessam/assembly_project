@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
-
+#include"graphics.h"
 // Forward declarations
 struct DecodedInstruction;
 class Registers;

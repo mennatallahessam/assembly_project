@@ -14,3 +14,12 @@
 6	28	7733415629718516	clean	808cc43b64b982b1
 20	709	7735399470004186	build.ninja	fb993c48d40282b7
 107	307	7735399473488274	assembly_project.exe	dca554c1edbc06e2
+115	2183	7736101066646727	CMakeFiles/assembly_project.dir/src/memory.cpp.obj	bc2762d9e23d0dca
+65	2809	7736101066129230	CMakeFiles/assembly_project.dir/src/alu.cpp.obj	1c2cf2a90d2bdb12
+55	3249	7736101066027391	CMakeFiles/assembly_project.dir/src/main.cpp.obj	19f92711dc589e18
+193	2643	7736101588386918	CMakeFiles/assembly_project.dir/src/alu.cpp.obj	1c2cf2a90d2bdb12
+177	2650	7736101588224756	CMakeFiles/assembly_project.dir/src/main.cpp.obj	19f92711dc589e18
+11	1460	7736102996151995	CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj	7024a42d626e2192
+1461	3546	7736103010647182	assembly_project.exe	dca554c1edbc06e2
+38	1982	7736103176816807	CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj	7024a42d626e2192
+1983	2447	7736103196263835	assembly_project.exe	dca554c1edbc06e2

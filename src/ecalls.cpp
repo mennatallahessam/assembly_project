@@ -182,35 +182,35 @@ EcallResult Ecalls::printString(const EcallContext& ctx, Memory& mem) {
 }
 
 EcallResult Ecalls::playTone(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-    uint16_t freq = ctx.a0;
+   /* uint16_t freq = ctx.a0;
     uint16_t duration = ctx.a1;
 
-    gfx.playSound(freq, duration); // implement this in graphics
+    gfx.playSound(freq, duration); // implement this in graphics*/
     return EcallResult(true, 0, false);
 }
 
 
 EcallResult Ecalls::setAudioVolume(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-    uint16_t volume = ctx.a0;
+   /* uint16_t volume = ctx.a0;
 
     if (volume > 255) {
         return EcallResult(false, 0, false, "Volume must be 0-255");
     }
 
-    gfx.setVolume(volume); // implement in graphics class
+    gfx.setVolume(volume); // implement in graphics class*/
     return EcallResult(true, 0, false);
 }
 
 
 EcallResult Ecalls::stopAudio(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-    gfx.stopSound(); // implement in graphics class
+ //   gfx.stopSound(); // implement in graphics class
     return EcallResult(true, 0, false);
 }
 
 
 EcallResult Ecalls::readKeyboard(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-    uint16_t key = gfx.getKeyPressed(); // implement in graphics class
-    return EcallResult(true, key, false);
+   // uint16_t key = gfx.getKeyPressed(); // implement in graphics class
+    return EcallResult(true, 0, false);
 }
 
 
