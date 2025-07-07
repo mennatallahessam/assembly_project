@@ -19,7 +19,5 @@ add_executable(assembly_project
         src/memory.cpp
         src/registers.h
         src/registers.cpp
-        src/simulator.h
-        src/simulator.cpp
         src/utils.h
         src/utils.cpp)
