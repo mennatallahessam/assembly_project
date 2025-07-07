@@ -102,7 +102,7 @@ void waitForEnter() {
 }
 
 int main() {
-    std::string programPath = "C:/Users/ASUS/Desktop/z16/assembler/comprehensivetest.bin";
+    std::string programPath = "C:/Users/ASUS/Desktop/z16-fork/assembler/trial.bin";
     std::vector<uint16_t> instructions = readBinaryFile(programPath);
 
     if (instructions.empty()) {

@@ -66,7 +66,14 @@ private:
     // Individual ECALL service handlers
     EcallResult readString(const EcallContext& ctx, Memory& mem);
     EcallResult readInteger(const EcallContext& ctx, Memory& mem);
-    EcallResult printString(const EcallContext& ctx, Memory& mem);EcallResult playTone(const EcallContext& ctx, Memory& mem, graphics& gfx);
+
+   // std::string readStringFromMemory(const Memory & mem, uint16_t addr);
+     std::string readStringFromMemory(const Memory &mem, uint16_t addr);
+
+    EcallResult printString(const EcallContext& ctx, Memory& mem);
+
+
+    EcallResult playTone(const EcallContext& ctx, Memory& mem, graphics& gfx);
     EcallResult setAudioVolume(const EcallContext& ctx, Memory& mem, graphics& gfx);
     EcallResult stopAudio(const EcallContext& ctx, Memory& mem, graphics& gfx);
     EcallResult readKeyboard(const EcallContext& ctx, Memory& mem, graphics& gfx);

@@ -24,57 +24,68 @@ void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& me
     switch (service) {
         case 1:
             result = readString(ctx, mem);
-        break;
+            break;
 
         case 2:
             result = readInteger(ctx, mem);
-        break;
+            break;
 
         case 3:
             result = printString(ctx, mem);
-        break;
+            break;
 
         case 4:
             result = playTone(ctx, mem, gfx);
-        break;
+            break;
 
         case 5:
             result = setAudioVolume(ctx, mem, gfx);
-        break;
+            break;
 
         case 6:
             result = stopAudio(ctx, mem, gfx);
-        break;
+            break;
 
         case 7:
             result = readKeyboard(ctx, mem, gfx);
-        break;
+            // Special handling for readKeyboard - need to set both a0 and a1
+            if (result.success) {
+                regs[6] = result.return_value;  // x6 (a0) = key code
+                regs[7] = (result.return_value != 0) ? 1 : 0;  // x7 (a1) = key pressed flag
+            }
+            break;
 
         case 8:
             result = registersDump(ctx, regs);
-        break;
+            break;
 
         case 9:
             result = memoryDump(ctx, mem);
-        break;
+            break;
 
         case 10:
             result = programExit(ctx);
-        break;
+            break;
 
         default:
             std::cerr << "[ECALL ERROR] Unknown service: " << service << std::endl;
             result = EcallResult(false, 0, true, "Unknown ECALL service");
     }
 
-    // Apply result to processor state
-    applyResult(result, regs, halted);
+    // Apply result to processor state (but skip for readKeyboard since we handled it above)
+    if (service != 7) {
+        applyResult(result, regs, halted);
+    } else {
+        // For readKeyboard, we only need to handle the halt flag
+        if (result.should_halt) {
+            halted = true;
+        }
+    }
 
     if (!result.success) {
         std::cerr << "[ECALL ERROR] " << result.error_message << std::endl;
     }
 }
-
 EcallContext Ecalls::createContext(uint16_t service, const Registers& regs) {
     // ZX16 ABI: a0 = x6, a1 = x7
     EcallContext ctx(service, regs[6], regs[7]);
@@ -82,16 +93,15 @@ EcallContext Ecalls::createContext(uint16_t service, const Registers& regs) {
 }
 
 void Ecalls::applyResult(const EcallResult& result, Registers& regs, bool& halted) {
-   /* if (result.success) {
+    if (result.success) {
         // Store return value in a0 (x6)
         regs[6] = result.return_value;
-    }*/
+    }
 
     if (result.should_halt) {
         halted = true;
     }
 }
-
 // =============================================================================
 // ECALL SERVICE IMPLEMENTATIONS
 // =============================================================================
@@ -153,8 +163,6 @@ EcallResult Ecalls::printString(const EcallContext& ctx, Memory& mem) {
         return EcallResult(true, 1, false);
     }
 
-
-
     if (!isValidMemoryAddress(addr)) {
         return EcallResult(false, 0, false, "Invalid memory address for string");
     }
@@ -162,25 +170,54 @@ EcallResult Ecalls::printString(const EcallContext& ctx, Memory& mem) {
     // Try to read the string from memory
     std::string str = readStringFromMemory(mem, addr);
 
-    // If string is empty, try reading as a single character or number
+    // If string reading failed or returned empty, treat as number
     if (str.empty()) {
-        uint16_t value = mem.load16(addr);
+        uint16_t value = mem.load16(addr);  // This is correct for loading a 16-bit number
         int16_t val = static_cast<int16_t>(value);
-
-        // Debug output
-        std::cout << "Debug: loaded uint16_t = " << value
-                  << ", cast to int16_t = " << val << std::endl;
-
         std::cout << std::dec << static_cast<int>(val) << std::endl;
         return EcallResult(true, 1, false);
     }
 
-
-    // Print the string
-    std::cout << str;
+    // Print the string (should end with newline for consistency)
+    std::cout << str << std::endl;
     return EcallResult(true, str.length(), false);
 }
 
+// Make sure your readStringFromMemory function looks like this:
+std::string Ecalls::readStringFromMemory(const Memory& mem, uint16_t addr) {
+    std::string result;
+    uint32_t current_addr = static_cast<uint32_t>(addr);  // Convert to uint32_t for memory access
+
+    try {
+        while (current_addr < MEMORY_SIZE) {  // Use your MEMORY_SIZE constant
+            uint8_t byte = mem.load8(current_addr);  // Use load8() from your Memory class
+
+            if (byte == 0) {  // Null terminator
+                break;
+            }
+
+            // Check if it's a printable character
+            if (byte >= 32 && byte <= 126) {  // Printable ASCII range
+                result += static_cast<char>(byte);
+            } else {
+                // If we encounter non-printable character, assume it's not a string
+                return "";
+            }
+
+            current_addr++;
+
+            // Prevent infinite loops
+            if (result.length() > 1000) {
+                return "";
+            }
+        }
+    } catch (const AddressOutOfBoundsException&) {
+        // If we hit invalid memory, return what we have so far
+        return result;
+    }
+
+    return result;
+}
 EcallResult Ecalls::playTone(const EcallContext& ctx, Memory& mem, graphics& gfx) {
    /* uint16_t freq = ctx.a0;
     uint16_t duration = ctx.a1;
@@ -207,12 +244,28 @@ EcallResult Ecalls::stopAudio(const EcallContext& ctx, Memory& mem, graphics& gf
     return EcallResult(true, 0, false);
 }
 
-
 EcallResult Ecalls::readKeyboard(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-   // uint16_t key = gfx.getKeyPressed(); // implement in graphics class
-    return EcallResult(true, 0, false);
-}
+    uint16_t key = 0;
+    bool keyPressed = false;
 
+    // Check if there's input available without blocking
+    std::cout << "Enter key (or press Enter for no key): ";
+    std::string input;
+    std::getline(std::cin, input);
+
+    if (!input.empty()) {
+        // Get the first character and convert to key code
+        key = static_cast<uint16_t>(input[0]);
+        keyPressed = true;
+    }
+
+    // According to the service specification:
+    // x6 (a0) = the key code
+    // x7 (a1) = 1 if a key is pressed, 0 if nothing is pressed
+
+    // We'll handle setting both registers in a special way for this ecall
+    return EcallResult(true, key, false);
+}
 
 EcallResult Ecalls::registersDump(const EcallContext& ctx, const Registers& regs) {
     std::cout << "\n=== REGISTER DUMP ===" << std::endl;
