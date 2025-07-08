@@ -87,11 +87,22 @@ void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& me
     }
 }
 EcallContext Ecalls::createContext(uint16_t service, const Registers& regs) {
-    // ZX16 ABI: a0 = x6, a1 = x7
-    EcallContext ctx(service, regs[6], regs[7]);
+    // Debug register values
+   /* std::cout << "[DEBUG] Creating context for service " << service << std::endl;
+    std::cout << "[DEBUG] Register x6 (a0): 0x" << std::hex << regs[6] << std::endl;
+    std::cout << "[DEBUG] Register x7 (a1): 0x" << std::hex << regs[7] << std::endl;
+*/
+    // Check if there's an endianness issue
+    uint16_t a0_val = regs[6];
+    uint16_t a1_val = regs[7];
+
+    // Check for potential byte-swapped values
+    uint16_t a0_swapped = ((a0_val & 0xFF) << 8) | ((a0_val >> 8) & 0xFF);
+    //std::cout << "[DEBUG] a0 byte-swapped would be: 0x" << std::hex << a0_swapped << std::endl;
+
+    EcallContext ctx(service, a0_val, a1_val);
     return ctx;
 }
-
 void Ecalls::applyResult(const EcallResult& result, Registers& regs, bool& halted) {
     if (result.success) {
         // Store return value in a0 (x6)
@@ -152,72 +163,83 @@ EcallResult Ecalls::readInteger(const EcallContext& ctx, Memory& mem) {
 
     return EcallResult(true, result, false);
 }
-
 EcallResult Ecalls::printString(const EcallContext& ctx, Memory& mem) {
     uint16_t addr = ctx.a0;
 
-    // Treat small values as numbers to print directly in decimal
-    if (addr < 1000 || addr > 32767) {  // addr > 32767 means negative in 16-bit signed
+    // Check if this looks like a small integer rather than a string address
+    if (addr < 0x100) {  // Values < 256 are probably integers, not addresses
+        // Print as integer
         int16_t signed_val = static_cast<int16_t>(addr);
-        std::cout << std::dec << static_cast<int>(signed_val) << std::endl;
+        std::cout << std::dec << signed_val << std::endl;
         return EcallResult(true, 1, false);
     }
 
-    if (!isValidMemoryAddress(addr)) {
-        return EcallResult(false, 0, false, "Invalid memory address for string");
-    }
-
-    // Try to read the string from memory
+    // Try to read as string address
     std::string str = readStringFromMemory(mem, addr);
 
-    // If string reading failed or returned empty, treat as number
-    if (str.empty()) {
-        uint16_t value = mem.load16(addr);  // This is correct for loading a 16-bit number
-        int16_t val = static_cast<int16_t>(value);
-        std::cout << std::dec << static_cast<int>(val) << std::endl;
+    if (!str.empty()) {
+        std::cout << str << std::endl;
+        return EcallResult(true, str.length(), false);
+    } else {
+        // Fallback to integer printing
+        int16_t signed_val = static_cast<int16_t>(addr);
+        std::cout << std::dec << signed_val << std::endl;
         return EcallResult(true, 1, false);
     }
-
-    // Print the string (should end with newline for consistency)
-    std::cout << str << std::endl;
-    return EcallResult(true, str.length(), false);
 }
+// 2. ISSUE: Memory access endianness or alignment
+// The problem might be in how 16-bit addresses are stored/retrieved
 
-// Make sure your readStringFromMemory function looks like this:
+// SOLUTION 2: Improved readStringFromMemory with better address handling
 std::string Ecalls::readStringFromMemory(const Memory& mem, uint16_t addr) {
     std::string result;
-    uint32_t current_addr = static_cast<uint32_t>(addr);  // Convert to uint32_t for memory access
+
+    // Ensure we're starting at the correct address
+    //std::cout << "[DEBUG] readStringFromMemory: Starting at 0x" << std::hex << addr << std::endl;
+
+    // Check if we need to handle alignment issues
+    if (addr % 2 != 0) {
+        std::cout << "[DEBUG] Warning: Unaligned address 0x" << std::hex << addr << std::endl;
+    }
 
     try {
-        while (current_addr < MEMORY_SIZE) {  // Use your MEMORY_SIZE constant
-            uint8_t byte = mem.load8(current_addr);  // Use load8() from your Memory class
+        // Read bytes sequentially from the exact address
+        for (int i = 0; i < 100; i++) {
+            uint16_t current_addr = addr + i;
 
-            if (byte == 0) {  // Null terminator
+            if (!isValidMemoryAddress(current_addr)) {
+                std::cout << "[DEBUG] Invalid address reached: 0x" << std::hex << current_addr << std::endl;
                 break;
             }
 
-            // Check if it's a printable character
-            if (byte >= 32 && byte <= 126) {  // Printable ASCII range
-                result += static_cast<char>(byte);
-            } else {
-                // If we encounter non-printable character, assume it's not a string
-                return "";
+            uint8_t byte = mem.load8(current_addr);
+
+          //  std::cout << "[DEBUG] Address 0x" << std::hex << current_addr
+            //          << " -> 0x" << std::setw(2) << std::setfill('0') << (int)byte;
+
+            if (byte == 0) {
+                std::cout << " (NULL)" << std::endl;
+                break;
             }
 
-            current_addr++;
-
-            // Prevent infinite loops
-            if (result.length() > 1000) {
-                return "";
+            if (byte >= 32 && byte <= 126) {
+                result += static_cast<char>(byte);
+                std::cout << " ('" << static_cast<char>(byte) << "')" << std::endl;
+            } else {
+                std::cout << " (non-printable)" << std::endl;
+                // For debugging, you might want to include non-printable chars
+                // result += '?';
             }
         }
-    } catch (const AddressOutOfBoundsException&) {
-        // If we hit invalid memory, return what we have so far
-        return result;
+    } catch (const std::exception& e) {
+        std::cout << "[DEBUG] Exception: " << e.what() << std::endl;
+        return "";
     }
 
     return result;
 }
+
+
 EcallResult Ecalls::playTone(const EcallContext& ctx, Memory& mem, graphics& gfx) {
    /* uint16_t freq = ctx.a0;
     uint16_t duration = ctx.a1;

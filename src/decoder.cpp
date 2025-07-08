@@ -211,15 +211,29 @@ std::string Decoder::jTypeOpToString(JTypeOp op) {
         default:       return "UNKNOWN_J";
     }
 }
-
 UTypeOp Decoder::decodeUTypeOperation(uint16_t inst) {
     bool flag = (inst >> 15) & 0x1;
     return flag ? UTOP_AUIPC : UTOP_LUI;
 }
 
+// Add this sign extension function for 9-bit immediates
+int16_t Decoder::signExtend9(uint16_t imm9) {
+    if (imm9 & 0x100) // if bit 8 (sign bit) is set
+        return (int16_t)(imm9 | 0xFE00);
+    else
+        return (int16_t)(imm9 & 0x1FF);
+}
+
 uint16_t Decoder::decodeUTypeImmediate(uint16_t inst) {
-    uint16_t imm = (inst >> 7) & 0x1FF;
-    return imm << 7;
+    // Extract immediate bits according to U-Type format:
+    // [15] flag, [14:9] imm[15:10], [8:6] rd, [5:3] imm[9:7], [2:0] opcode
+    uint16_t imm_high = (inst >> 9) & 0x3F;   // 6 bits [14:9] -> imm[15:10]
+    uint16_t imm_low  = (inst >> 3) & 0x7;    // 3 bits [5:3] -> imm[9:7]
+    uint16_t raw_imm  = (imm_high << 3) | imm_low;  // 9-bit immediate
+
+    // Sign extend the 9-bit immediate, then shift left by 7
+    int16_t signed_imm = signExtend9(raw_imm);
+    return (uint16_t)(signed_imm << 7);
 }
 
 std::string Decoder::uTypeOpToString(UTypeOp op) {
@@ -229,8 +243,7 @@ std::string Decoder::uTypeOpToString(UTypeOp op) {
         default:         return "UNKNOWN_U";
     }
 }
-
-SysTypeOp Decoder::decodeSysTypeOperation(uint16_t inst) {
+        SysTypeOp Decoder::decodeSysTypeOperation(uint16_t inst) {
     uint8_t func3 = (inst >> 3) & 0x7;
     return (func3 == 0b000) ? SYSOP_ECALL : SYSOP_UNKNOWN;
 }
@@ -342,21 +355,24 @@ DecodedInstruction Decoder::decode(uint16_t inst) {
         }
 
         case FORMAT_U: {
-            // ZX16 U-type format: [15] flag, [14:9] imm[8:3], [8:6] rd, [5:3] imm[2:0], [2:0] opcode
+            // ZX16 U-type format: [15] flag, [14:9] imm[15:10], [8:6] rd, [5:3] imm[9:7], [2:0] opcode
             d.rd = (inst >> 6) & 0x7;
 
-            uint16_t imm_high = (inst >> 9) & 0x3F;   // 6 bits [14:9]
-            uint16_t imm_low  = (inst >> 3) & 0x7;    // 3 bits [5:3]
-            uint16_t raw_imm  = (imm_high << 3) | imm_low;
+            // Extract immediate bits correctly
+            uint16_t imm_high = (inst >> 9) & 0x3F;   // 6 bits [14:9] -> imm[15:10]
+            uint16_t imm_low  = (inst >> 3) & 0x7;    // 3 bits [5:3] -> imm[9:7]
+            uint16_t raw_imm  = (imm_high << 3) | imm_low;  // 9-bit immediate
 
             d.u_op = decodeUTypeOperation(inst);
             d.mnemonic = uTypeOpToString(d.u_op);
-            d.imm = raw_imm << 7;  // Upper immediate shifted left by 7
+
+            // Upper immediate: place 9-bit value in bits [15:7]
+            d.imm = raw_imm << 7;
             d.uimm = d.imm;
             d.raw_imm = raw_imm;
+
             break;
         }
-
         case FORMAT_SYS: {
             // ZX16 SYS-type format: [15:6] syscall_num, [5:3] func3, [2:0] opcode
             d.syscall_num = decodeSysCallNumber(inst);

@@ -70,6 +70,8 @@ private:
    // std::string readStringFromMemory(const Memory & mem, uint16_t addr);
      std::string readStringFromMemory(const Memory &mem, uint16_t addr);
 
+    std::string readStringFromMemory(const Memory &mem, uint16_t addr, uint16_t maxlen);
+
     EcallResult printString(const EcallContext& ctx, Memory& mem);
 
 
