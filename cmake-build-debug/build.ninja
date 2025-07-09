@@ -119,6 +119,13 @@ build CMakeFiles/assembly_project.dir/src/DataLoader.cpp.obj: CXX_COMPILER__asse
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
+build CMakeFiles/assembly_project.dir/src/graphics.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/graphics.cpp || cmake_object_order_depends_target_assembly_project
+  DEP_FILE = CMakeFiles\assembly_project.dir\src\graphics.cpp.obj.d
+  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  OBJECT_DIR = CMakeFiles\assembly_project.dir
+  OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target assembly_project
@@ -127,7 +134,7 @@ build CMakeFiles/assembly_project.dir/src/DataLoader.cpp.obj: CXX_COMPILER__asse
 #############################################
 # Link the executable assembly_project.exe
 
-build assembly_project.exe: CXX_EXECUTABLE_LINKER__assembly_project_Debug CMakeFiles/assembly_project.dir/src/decoder.cpp.obj CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj CMakeFiles/assembly_project.dir/src/main.cpp.obj CMakeFiles/assembly_project.dir/initial_code.cpp.obj CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj CMakeFiles/assembly_project.dir/src/alu.cpp.obj CMakeFiles/assembly_project.dir/src/memory.cpp.obj CMakeFiles/assembly_project.dir/src/registers.cpp.obj CMakeFiles/assembly_project.dir/src/utils.cpp.obj CMakeFiles/assembly_project.dir/src/DataLoader.cpp.obj
+build assembly_project.exe: CXX_EXECUTABLE_LINKER__assembly_project_Debug CMakeFiles/assembly_project.dir/src/decoder.cpp.obj CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj CMakeFiles/assembly_project.dir/src/main.cpp.obj CMakeFiles/assembly_project.dir/initial_code.cpp.obj CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj CMakeFiles/assembly_project.dir/src/alu.cpp.obj CMakeFiles/assembly_project.dir/src/memory.cpp.obj CMakeFiles/assembly_project.dir/src/registers.cpp.obj CMakeFiles/assembly_project.dir/src/utils.cpp.obj CMakeFiles/assembly_project.dir/src/DataLoader.cpp.obj CMakeFiles/assembly_project.dir/src/graphics.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\assembly_project.dir
