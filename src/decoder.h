@@ -94,6 +94,9 @@ private:
     LTypeOp decodeLTypeOperation(uint16_t inst);
     JTypeOp decodeJTypeOperation(uint16_t inst);
     UTypeOp decodeUTypeOperation(uint16_t inst);
+
+    int16_t signExtend9(uint16_t imm9);
+
     SysTypeOp decodeSysTypeOperation(uint16_t inst);
 
     std::string rTypeOpToString(RTypeOp op);

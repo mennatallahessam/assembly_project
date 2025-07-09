@@ -126,11 +126,12 @@ void ALU::execute(const DecodedInstruction& d, Registers& regs, Memory& mem, uin
             if (m == "LUI") {
                 regs.set(d.rd, d.imm);
             } else if (m == "AUIPC") {
-                regs.set(d.rd, pc + d.imm);
+                // Use the PC of the instruction, not the incremented PC
+                uint16_t instruction_pc = pc - 2;  // Subtract 2 to get instruction address
+                regs.set(d.rd, instruction_pc + d.imm);
             }
             break;
         }
-
         case FORMAT_SYS: {
             // ECALL should be handled in main, not here
             std::cerr << "ECALL should be handled in main, not in ALU" << std::endl;

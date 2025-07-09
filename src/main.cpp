@@ -10,9 +10,11 @@
 #include "graphics.h"
 #include "Ecalls.h"
 #include "alu.h"
+#include "DataLoader.h"  // Add this include
 
 using namespace std;
 
+// Keep your existing readBinaryFile function for compatibility
 std::vector<uint16_t> readBinaryFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     std::vector<uint16_t> instructions;
@@ -32,7 +34,8 @@ std::vector<uint16_t> readBinaryFile(const std::string& filename) {
     return instructions;
 }
 
-// Helper function to format instruction with registers
+
+// Keep your existing formatInstruction function
 std::string formatInstruction(const DecodedInstruction& d) {
     std::string result = d.mnemonic;
 
@@ -100,9 +103,32 @@ void waitForEnter() {
     std::cout << "Press Enter to continue..." << std::endl;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
+// Add this to your simulator to manually create test strings for debugging
+/*void setupTestStrings(Memory& mem) {
+    // Place strings at known addresses for testing
 
+    DataLoader::addStringToMemory(mem, 0x8000, "Hello World!");
+    DataLoader::addStringToMemory(mem, 0x8010, "ZX16 Simulator");
+    DataLoader::addStringToMemory(mem, 0x8020, "Testing string printing");
+    DataLoader::addStringToMemory(mem, 0x8040, "CSCE 2303");
+    DataLoader::addIntegerToMemory(mem, 0x8050, 42);
+    DataLoader::addIntegerToMemory(mem, 0x8052, -123);
+
+}*/
+
+// Call this after loading your binary file in main()
+//
 int main() {
-    std::string programPath = "C:/Users/ASUS/Desktop/z16-fork/assembler/trial.bin";
+    Decoder decoder;
+    Registers regs;
+    Memory mem;
+    graphics gfx;
+    Ecalls ecalls;
+    ALU alu;
+    DataSection dataSection;
+
+    //setupTestStrings(mem);
+    std::string programPath = "C:/Users/ASUS/Desktop/z16-fork/assembler/lasttest.bin";
     std::vector<uint16_t> instructions = readBinaryFile(programPath);
 
     if (instructions.empty()) {
@@ -110,22 +136,25 @@ int main() {
         return 1;
     }
 
-    Decoder decoder;
-    Registers regs;
-    Memory mem;
-    graphics gfx;
-    Ecalls ecalls;
-    ALU alu;  // Create ALU instance
+
+    // Initialize test data in memory
+   // initializeTestData(mem);
 
     // Load instructions into memory starting at 0x0000
     for (size_t i = 0; i < instructions.size(); ++i) {
         mem.store16(i * 2, instructions[i]);
     }
+   // setupTestStrings(mem);
+    // Optional: Print memory regions for debugging
+ /*   std::cout << "\n=== MEMORY INITIALIZATION DEBUG ===" << std::endl;
+    std::cout << "Instructions loaded at 0x0000-0x" << std::hex << (instructions.size() * 2) << std::endl;
+    std::cout << "Data section starts at 0x8000" << std::endl;*/
+    DataLoader::printMemoryRegion(mem, 0x8000, 0x200);  // Print first 512 bytes of data
 
     uint16_t pc = 0;
     bool halted = false;
 
-    std::cout << "Starting program execution. Press Enter after each instruction to continue.\n" << std::endl;
+    std::cout << "\nStarting program execution. Press Enter after each instruction to continue.\n" << std::endl;
 
     while (!halted) {
         uint16_t inst = mem.load16(pc);
@@ -142,15 +171,15 @@ int main() {
 
         // Handle ECALL specially since it needs syscall_num set
         if (d.format == FORMAT_SYS && d.sys_op == SYSOP_ECALL) {
-            // For ZX16, the syscall number comes from the instruction immediate field
-            // This is different from standard RISC-V but matches your assembly output
             DecodedInstruction ecall_instr = d;
-            ecall_instr.syscall_num = d.imm;  // Use immediate field as syscall number
+            ecall_instr.syscall_num = d.imm;
 
-            // Debug output to see what we're executing
-          /*  std::cout << "[ECALL DEBUG] Executing syscall " << d.imm
-                      << " with a0=" << regs[6] << ", a1=" << regs[7] << std::endl;
-*/
+            // Debug output for ECALL
+           /* if (d.imm == 3) {  // Print string
+                std::cout << "[DEBUG] Print string ECALL: a0=0x" << std::hex << regs[6]
+                          << " (" << std::dec << regs[6] << ")" << std::endl;
+            }*/
+
             ecalls.handle(ecall_instr, regs, mem, halted, gfx);
             pc += 2;
         } else {
