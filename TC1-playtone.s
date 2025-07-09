@@ -1,7 +1,9 @@
+    .data
+    msg: .string "A" 
     .text
-    li a0, 523          
-    li a1, 400          
-    ecall 33           
-    li a0, 65           
-    ecall 1             
+    li16 a0, 523          
+    li16 a1, 400          
+    ecall 4   
+    li16 a0, msg           
+    ecall 3           
     ecall 10           
