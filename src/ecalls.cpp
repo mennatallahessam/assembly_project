@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <sstream>
 #include <limits>
+#include <thread>
+#include <windows.h>
 
 void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& mem, bool& halted, graphics& gfx) {
     uint16_t service = regs.get(6); // x6 register holds service number
@@ -70,27 +72,23 @@ void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& me
 // ================ Audio ECALL Implementations ================
 
 EcallResult Ecalls::playTone(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-    if (!gfx.isAudioAvailable()) {
-        return EcallResult(false, 0, false, "Audio system not initialized");
-    }
-
     uint16_t freq = ctx.a0;
     uint16_t duration = ctx.a1;
 
-    // Validate frequency range (human hearing range)
-    if (freq < 20 || freq > 20000) {
-        return EcallResult(false, 0, false, "Frequency must be 20-20000 Hz");
+    if (freq == 0 || duration == 0) {
+        return EcallResult(false, 0, false, "Frequency and duration must be > 0");
     }
 
-    // Validate duration (1ms to ~65 seconds)
-    if (duration == 0 || duration > 65535) {
-        return EcallResult(false, 0, false, "Duration must be 1-65535 ms");
-    }
-
-    // Actual tone generation
-    if (!gfx.playTone(freq, duration)) {
-        return EcallResult(false, 0, false, "Failed to play tone");
-    }
+#ifdef _WIN32
+    // Play sound in a separate thread to prevent blocking
+    std::thread sound_thread([freq, duration]() {
+        Beep(freq, duration);
+    });
+    sound_thread.detach();
+#else
+    std::cout << "[ECALL 4] Simulated Tone → Freq: " << freq
+              << " Hz, Duration: " << duration << " ms (Non-Windows system)" << std::endl;
+#endif
 
     return EcallResult(true, 0, false);
 }
