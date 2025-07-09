@@ -20,4 +20,5 @@ add_executable(assembly_project
         src/registers.h
         src/registers.cpp
         src/utils.h
-        src/utils.cpp)
+        src/utils.cpp
+        src/DataLoader.cpp)
