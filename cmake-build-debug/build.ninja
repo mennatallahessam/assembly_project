@@ -52,77 +52,77 @@ build cmake_object_order_depends_target_assembly_project: phony || .
 build CMakeFiles/assembly_project.dir/src/decoder.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/decoder.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\decoder.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
 build CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/ecalls.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\ecalls.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
 build CMakeFiles/assembly_project.dir/src/main.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/main.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\main.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
 build CMakeFiles/assembly_project.dir/initial_code.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/initial$ code.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\initial_code.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir
 
 build CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/zx_16_simulator.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\zx_16_simulator.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir
 
 build CMakeFiles/assembly_project.dir/src/alu.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/alu.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\alu.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
 build CMakeFiles/assembly_project.dir/src/memory.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/memory.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\memory.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
 build CMakeFiles/assembly_project.dir/src/registers.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/registers.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\registers.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
 build CMakeFiles/assembly_project.dir/src/utils.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/utils.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\utils.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
 build CMakeFiles/assembly_project.dir/src/DataLoader.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/DataLoader.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\DataLoader.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
 build CMakeFiles/assembly_project.dir/src/graphics.cpp.obj: CXX_COMPILER__assembly_project_unscanned_Debug C$:/Users/ASUS/Desktop/assembly_project/src/graphics.cpp || cmake_object_order_depends_target_assembly_project
   DEP_FILE = CMakeFiles\assembly_project.dir\src\graphics.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src
+  INCLUDES = -IC:/Users/ASUS/Desktop/assembly_project/src -isystem C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/include
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   OBJECT_FILE_DIR = CMakeFiles\assembly_project.dir\src
 
@@ -134,9 +134,9 @@ build CMakeFiles/assembly_project.dir/src/graphics.cpp.obj: CXX_COMPILER__assemb
 #############################################
 # Link the executable assembly_project.exe
 
-build assembly_project.exe: CXX_EXECUTABLE_LINKER__assembly_project_Debug CMakeFiles/assembly_project.dir/src/decoder.cpp.obj CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj CMakeFiles/assembly_project.dir/src/main.cpp.obj CMakeFiles/assembly_project.dir/initial_code.cpp.obj CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj CMakeFiles/assembly_project.dir/src/alu.cpp.obj CMakeFiles/assembly_project.dir/src/memory.cpp.obj CMakeFiles/assembly_project.dir/src/registers.cpp.obj CMakeFiles/assembly_project.dir/src/utils.cpp.obj CMakeFiles/assembly_project.dir/src/DataLoader.cpp.obj CMakeFiles/assembly_project.dir/src/graphics.cpp.obj
+build assembly_project.exe: CXX_EXECUTABLE_LINKER__assembly_project_Debug CMakeFiles/assembly_project.dir/src/decoder.cpp.obj CMakeFiles/assembly_project.dir/src/ecalls.cpp.obj CMakeFiles/assembly_project.dir/src/main.cpp.obj CMakeFiles/assembly_project.dir/initial_code.cpp.obj CMakeFiles/assembly_project.dir/zx_16_simulator.cpp.obj CMakeFiles/assembly_project.dir/src/alu.cpp.obj CMakeFiles/assembly_project.dir/src/memory.cpp.obj CMakeFiles/assembly_project.dir/src/registers.cpp.obj CMakeFiles/assembly_project.dir/src/utils.cpp.obj CMakeFiles/assembly_project.dir/src/DataLoader.cpp.obj CMakeFiles/assembly_project.dir/src/graphics.cpp.obj | C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/libsfml-graphics-d.a C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/libsfml-window-d.a C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/libsfml-system-d.a
   FLAGS = -g
-  LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  LINK_LIBRARIES = C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/libsfml-graphics-d.a  C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/libsfml-window-d.a  C:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/libsfml-system-d.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\assembly_project.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
@@ -189,14 +189,14 @@ build all: phony assembly_project.exe
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCXXInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeGenericSystem.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeRCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-Initialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-windres.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/WindowsPaths.cmake C$:/Users/ASUS/Desktop/assembly_project/CMakeLists.txt CMakeCache.txt CMakeFiles/3.29.6/CMakeCCompiler.cmake CMakeFiles/3.29.6/CMakeCXXCompiler.cmake CMakeFiles/3.29.6/CMakeRCCompiler.cmake CMakeFiles/3.29.6/CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCXXInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeGenericSystem.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeRCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-Initialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-windres.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/WindowsPaths.cmake C$:/Users/ASUS/Desktop/assembly_project/CMakeLists.txt C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLConfig.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLConfigDependencies.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLConfigVersion.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLSharedTargets-debug.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLSharedTargets-release.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLSharedTargets.cmake CMakeCache.txt CMakeFiles/3.29.6/CMakeCCompiler.cmake CMakeFiles/3.29.6/CMakeCXXCompiler.cmake CMakeFiles/3.29.6/CMakeRCCompiler.cmake CMakeFiles/3.29.6/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCXXInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeGenericSystem.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeRCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-Initialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-windres.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/WindowsPaths.cmake C$:/Users/ASUS/Desktop/assembly_project/CMakeLists.txt CMakeCache.txt CMakeFiles/3.29.6/CMakeCCompiler.cmake CMakeFiles/3.29.6/CMakeCXXCompiler.cmake CMakeFiles/3.29.6/CMakeRCCompiler.cmake CMakeFiles/3.29.6/CMakeSystem.cmake: phony
+build C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCXXInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeGenericSystem.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeRCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Compiler/GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-Initialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows-windres.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/Windows.cmake C$:/Program$ Files/JetBrains/CLion$ 2024.2.1/bin/cmake/win/x64/share/cmake-3.29/Modules/Platform/WindowsPaths.cmake C$:/Users/ASUS/Desktop/assembly_project/CMakeLists.txt C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLConfig.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLConfigDependencies.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLConfigVersion.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLSharedTargets-debug.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLSharedTargets-release.cmake C$:/Users/ASUS/Desktop/assembly_project/SFML-2.6.1-windows-gcc-13.1.0-mingw-64-bit/SFML-2.6.1/lib/cmake/SFML/SFMLSharedTargets.cmake CMakeCache.txt CMakeFiles/3.29.6/CMakeCCompiler.cmake CMakeFiles/3.29.6/CMakeCXXCompiler.cmake CMakeFiles/3.29.6/CMakeRCCompiler.cmake CMakeFiles/3.29.6/CMakeSystem.cmake: phony
 
 
 #############################################

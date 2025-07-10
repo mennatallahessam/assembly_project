@@ -11,6 +11,10 @@
 #include "Ecalls.h"
 #include "alu.h"
 #include "DataLoader.h"  // Add this include
+#include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/System.hpp>
 
 using namespace std;
 
@@ -119,6 +123,10 @@ void waitForEnter() {
 // Call this after loading your binary file in main()
 //
 int main() {
+    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Hello World");
+    window.display();               // Display everything
+
+
     Decoder decoder;
     Registers regs;
     Memory mem;
@@ -135,6 +143,10 @@ int main() {
         std::cerr << "No instructions loaded, exiting." << std::endl;
         return 1;
     }
+
+
+
+
 
 
     // Initialize test data in memory
