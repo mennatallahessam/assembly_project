@@ -1,3 +1,4 @@
+// Modified main.cpp with graphics integration
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -10,7 +11,7 @@
 #include "graphics.h"
 #include "Ecalls.h"
 #include "alu.h"
-#include "DataLoader.h"  // Add this include
+#include "DataLoader.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
 #include <SFML/Window.hpp>
@@ -18,7 +19,7 @@
 
 using namespace std;
 
-// Keep your existing readBinaryFile function for compatibility
+// Keep your existing functions
 std::vector<uint16_t> readBinaryFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     std::vector<uint16_t> instructions;
@@ -38,8 +39,6 @@ std::vector<uint16_t> readBinaryFile(const std::string& filename) {
     return instructions;
 }
 
-
-// Keep your existing formatInstruction function
 std::string formatInstruction(const DecodedInstruction& d) {
     std::string result = d.mnemonic;
 
@@ -102,31 +101,68 @@ std::string formatInstruction(const DecodedInstruction& d) {
     return result;
 }
 
-// Helper function to wait for Enter key press
 void waitForEnter() {
     std::cout << "Press Enter to continue..." << std::endl;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
-// Add this to your simulator to manually create test strings for debugging
-/*void setupTestStrings(Memory& mem) {
-    // Place strings at known addresses for testing
 
-    DataLoader::addStringToMemory(mem, 0x8000, "Hello World!");
-    DataLoader::addStringToMemory(mem, 0x8010, "ZX16 Simulator");
-    DataLoader::addStringToMemory(mem, 0x8020, "Testing string printing");
-    DataLoader::addStringToMemory(mem, 0x8040, "CSCE 2303");
-    DataLoader::addIntegerToMemory(mem, 0x8050, 42);
-    DataLoader::addIntegerToMemory(mem, 0x8052, -123);
+// Graphics test function
+void setupGraphicsTest(Memory& mem, graphics& gfx) {
+    std::cout << "\n=== Setting up Graphics Test ===" << std::endl;
 
-}*/
+    // Set up test color palette
+    gfx.setTestPalette(mem);
 
-// Call this after loading your binary file in main()
-//
+    // Create a simple test pattern in tile map
+    try {
+        // Fill tile map with alternating tile patterns
+        for (int i = 0; i < 300; i++) {
+            uint8_t tileIndex = (i % 4); // Use tiles 0-3
+            mem.store8(0xF000 + i, tileIndex);
+        }
+
+        // Create simple test tiles
+        // Tile 0: Solid color (color index 1 - blue)
+        for (int i = 0; i < 128; i++) {
+            mem.store8(0xF200 + i, 0x11); // Both pixels color 1
+        }
+
+        // Tile 1: Checkered pattern (colors 2 and 3)
+        for (int i = 0; i < 128; i++) {
+            int pixelPair = i;
+            int row = (pixelPair * 2) / 16;
+            int col = (pixelPair * 2) % 16;
+
+            bool checker = ((row / 2) + (col / 2)) % 2;
+            uint8_t colorPair = checker ? 0x23 : 0x32; // Alternate colors 2 and 3
+            mem.store8(0xF200 + 128 + i, colorPair);
+        }
+
+        // Tile 2: Gradient pattern
+        for (int i = 0; i < 128; i++) {
+            uint8_t color = (i * 15) / 127; // Gradient from 0 to 15
+            mem.store8(0xF200 + 256 + i, (color << 4) | color);
+        }
+
+        // Tile 3: Border pattern
+        for (int i = 0; i < 128; i++) {
+            int pixelPair = i;
+            int row = (pixelPair * 2) / 16;
+            int col = (pixelPair * 2) % 16;
+
+            bool border = (row == 0 || row == 15 || col == 0 || col == 15);
+            uint8_t colorPair = border ? 0x77 : 0x00; // White border, black center
+            mem.store8(0xF200 + 384 + i, colorPair);
+        }
+
+        std::cout << "Graphics test pattern created" << std::endl;
+
+    } catch (const AddressOutOfBoundsException& e) {
+        std::cerr << "Error setting up graphics test: " << e.what() << std::endl;
+    }
+}
+
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "SFML Hello World");
-    window.display();               // Display everything
-
-
     Decoder decoder;
     Registers regs;
     Memory mem;
@@ -135,7 +171,23 @@ int main() {
     ALU alu;
     DataSection dataSection;
 
-    //setupTestStrings(mem);
+    // Initialize graphics system
+    bool graphicsReady = gfx.initializeGraphics();
+    if (graphicsReady) {
+        std::cout << "Graphics system initialized successfully!" << std::endl;
+        setupGraphicsTest(mem, gfx);
+
+        // Initial graphics update
+        gfx.updateGraphics(mem);
+        gfx.renderFrame();
+
+        std::cout << "\nGraphics Controls:" << std::endl;
+        std::cout << "  P - Display color palette info" << std::endl;
+        std::cout << "  T - Show color palette test" << std::endl;
+        std::cout << "  Close graphics window to exit graphics mode" << std::endl;
+    }
+
+    // Load your program
     std::string programPath = "C:/Users/ASUS/Desktop/z16-fork/assembler/lasttest.bin";
     std::vector<uint16_t> instructions = readBinaryFile(programPath);
 
@@ -144,74 +196,72 @@ int main() {
         return 1;
     }
 
-
-
-
-
-
-    // Initialize test data in memory
-   // initializeTestData(mem);
-
-    // Load instructions into memory starting at 0x0000
+    // Load instructions into memory
     for (size_t i = 0; i < instructions.size(); ++i) {
         mem.store16(i * 2, instructions[i]);
     }
-   // setupTestStrings(mem);
-    // Optional: Print memory regions for debugging
- /*   std::cout << "\n=== MEMORY INITIALIZATION DEBUG ===" << std::endl;
-    std::cout << "Instructions loaded at 0x0000-0x" << std::hex << (instructions.size() * 2) << std::endl;
-    std::cout << "Data section starts at 0x8000" << std::endl;*/
-    DataLoader::printMemoryRegion(mem, 0x8000, 0x200);  // Print first 512 bytes of data
 
     uint16_t pc = 0;
     bool halted = false;
 
-    std::cout << "\nStarting program execution. Press Enter after each instruction to continue.\n" << std::endl;
+    std::cout << "\nStarting program execution." << std::endl;
+    if (graphicsReady) {
+        std::cout << "Graphics window is open - you can interact with it while the program runs." << std::endl;
+    }
+    std::cout << "Press Enter after each instruction to continue.\n" << std::endl;
 
     while (!halted) {
+        // Handle graphics events (non-blocking)
+        if (graphicsReady && gfx.isGraphicsWindowOpen()) {
+            gfx.handleGraphicsEvents();
+        }
+
         uint16_t inst = mem.load16(pc);
         DecodedInstruction d = decoder.decode(inst);
 
-        // Check if this is a NOP and skip display if desired
         bool is_nop = (d.format == FORMAT_R && d.mnemonic == "ADD" && d.rd == 0 && d.rs1 == 0 && d.rs2 == 0);
 
-        // Display instruction (skip NOPs)
         if (!is_nop) {
             std::string formatted = formatInstruction(d);
             std::cout << std::hex << std::setw(4) << std::setfill('0') << pc << ": " << formatted << std::endl;
         }
 
-        // Handle ECALL specially since it needs syscall_num set
+        // Execute instruction
         if (d.format == FORMAT_SYS && d.sys_op == SYSOP_ECALL) {
             DecodedInstruction ecall_instr = d;
             ecall_instr.syscall_num = d.imm;
-
-            // Debug output for ECALL
-           /* if (d.imm == 3) {  // Print string
-                std::cout << "[DEBUG] Print string ECALL: a0=0x" << std::hex << regs[6]
-                          << " (" << std::dec << regs[6] << ")" << std::endl;
-            }*/
-
             ecalls.handle(ecall_instr, regs, mem, halted, gfx);
             pc += 2;
         } else {
-            // Store current PC for ALU execution
             uint16_t next_pc = pc + 2;
-
-            // Execute instruction using ALU
             alu.execute(d, regs, mem, next_pc, halted, ecalls, gfx);
-
-            // Update PC
             pc = next_pc;
         }
         regs.setPC(pc);
 
-        // Wait for Enter key press after each instruction (except NOPs)
+        // Update graphics after each instruction (if graphics are enabled)
+        if (graphicsReady && gfx.isGraphicsWindowOpen()) {
+            gfx.updateGraphics(mem);
+            gfx.renderFrame();
+        }
+
+        // Wait for input (except for NOPs)
         if (!is_nop && !halted) {
             waitForEnter();
         }
     }
 
     std::cout << "\nProgram execution completed." << std::endl;
+
+    // Keep graphics window open for a bit after program ends
+    if (graphicsReady && gfx.isGraphicsWindowOpen()) {
+        std::cout << "Graphics window is still open. Close it to exit." << std::endl;
+        while (gfx.isGraphicsWindowOpen()) {
+            gfx.handleGraphicsEvents();
+            gfx.renderFrame();
+            sf::sleep(sf::milliseconds(16)); // ~60 FPS
+        }
+    }
+
     return 0;
 }
