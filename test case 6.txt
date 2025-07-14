@@ -1,0 +1,10 @@
+.data
+buffer: .space 20
+
+.text
+.global main
+main:
+    LA x6, buffer       # a0 = address
+    ADDI x7, 20         # a1 = max length
+    ECALL 1             # read string
+    ECALL 10

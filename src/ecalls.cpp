@@ -95,11 +95,7 @@ void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& me
     }
 }
 EcallContext Ecalls::createContext(uint16_t service, const Registers& regs) {
-    // Debug register values
-    /* std::cout << "[DEBUG] Creating context for service " << service << std::endl;
-     std::cout << "[DEBUG] Register x6 (a0): 0x" << std::hex << regs[6] << std::endl;
-     std::cout << "[DEBUG] Register x7 (a1): 0x" << std::hex << regs[7] << std::endl;
- */
+
     // Check if there's an endianness issue
     uint16_t a0_val = regs[6];
     uint16_t a1_val = regs[7];

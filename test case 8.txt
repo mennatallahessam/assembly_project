@@ -1,0 +1,13 @@
+.text
+.global main
+main:
+    # x6 = 440 (a0 = frequency)
+    LUI x6, 0          # high part = 0
+    ADDI x6, x6, 440   # add low part = 440
+
+    # x7 = 300 (a1 = duration)
+    LUI x7, 0          # high part = 0
+    ADDI x7, x7, 300   # add low part = 300
+
+    ECALL 4            # Play tone (a0 = x6, a1 = x7)
+    ECALL 10           # Exit
