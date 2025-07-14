@@ -1,0 +1,37 @@
+.text
+.org 0x0080
+.global main
+main:
+    LI x6, 2           # ECALL 2: Read integer
+    ECALL 2
+    MV x3, x6          # move result from a0 to x3
+
+    CALL square        # compute square of x3 → x3
+
+    # Debug: Dump registers to see result
+    LI x6, 8           # ECALL 8: Dump registers
+    ECALL 8
+
+    LI x6, 10          # ECALL 10: Exit
+    ECALL 10
+
+# square function: input/output in x3
+square:
+    MV x4, x3          # multiplicand
+    MV x7, x3          # multiplier
+    XOR x3, x3         # result = 0
+
+square_loop:
+    BZ x7, square_done
+    AND x2, x7
+    ANDI x2, 1
+    BEQ x2, x0, skip_add
+    ADD x3, x4         # result += multiplicand
+
+skip_add:
+    SLL x4, x4         # multiplicand <<= 1
+    SRL x7, x7         # multiplier >>= 1
+    J square_loop
+
+square_done:
+    RET

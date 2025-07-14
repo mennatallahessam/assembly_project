@@ -1,0 +1,52 @@
+.text
+.global main
+main:
+    ADDI x6, 5              # x6 = n = 5
+    JAL x1, factorial       # call factorial
+    MV x5, x6               # move result to x5
+    ECALL 0x005             # syscall: exit with x5
+
+# Recursive factorial: input/output in x6
+factorial:
+    ADDI x2, -2             # allocate 2 words
+    SW x1, 0(x2)            # save return address
+    SW x7, 2(x2)            # save x7
+    ADDI x7, 1              # x7 = 1
+    BNE x6, x7, check_zero  # if n != 1, check if n == 0
+    J base_case             # if n == 1, return 1
+
+check_zero:
+    BNE x6, x0, recurse     # if n != 0, recurse
+    J base_case             # if n == 0, return 1
+
+recurse:
+    MV x3, x6               # preserve n in x3
+    ADDI x6, -1             # x6 = n - 1
+    JAL x1, factorial       # recurse: factorial(n-1)
+
+    # Shift-add multiply x6 (result) * x3 (n)
+    MV x4, x3               # x4 = multiplier (original n)
+    MV x5, x6               # x5 = multiplicand (fact result)
+    XOR x6, x6              # x6 = result = 0
+
+mul_loop:
+    AND x7, x4              # x7 = x4 & x4 (to extract LSB)
+    SLTI x7, 2              # if LSB == 1
+    BZ x7, skip_add         # skip if zero
+    ADD x6, x5              # x6 += x5
+
+skip_add:
+    SLL x5, x5              # x5 <<= 1
+    SRL x4, x4              # x4 >>= 1
+    BNZ x4, mul_loop        # loop if x4 ≠ 0
+
+    J end
+
+base_case:
+    ADDI x6, 1              # return 1
+
+end:
+    LW x1, 0(x2)            # restore return address
+    LW x7, 2(x2)            # restore x7
+    ADDI x2, 2              # deallocate stack
+    JR x1                   # return

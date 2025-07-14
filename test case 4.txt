@@ -1,0 +1,16 @@
+.text
+.global main
+main:
+    ADDI x0, 10          # t0 = 10 (use x0 as source, result in x0 — update below)
+    MV x1, x0            # x1 = t0 = 10
+    ADDI x2, 0           # x2 = t1 = 0 (sum)
+
+loop:
+    BZ x1, end_loop      # if t0 == 0 → end
+    ADD x2, x1           # t1 = t1 + t0
+    ADDI x1, -1          # t0--
+    J loop               # jump to loop
+
+end_loop:
+    MV x5, x2            # x5 = sum (exit code)
+    ECALL 10          # syscall: exit with 10
