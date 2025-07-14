@@ -11,11 +11,6 @@ void ALU::execute(const DecodedInstruction& d, Registers& regs, Memory& mem, uin
 
     switch (d.format) {
         case FORMAT_R: {
-            // Check for NOP (ADD x0, x0, x0) - do nothing
-            if (m == "ADD" && d.rd == 0 && d.rs1 == 0 && d.rs2 == 0) {
-                break; // NOP - do nothing
-            }
-
             uint16_t rs1_val = regs.get(d.rs1);
             uint16_t rs2_val = regs.get(d.rs2);
             uint16_t result = 0;
