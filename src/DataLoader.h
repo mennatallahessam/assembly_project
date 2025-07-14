@@ -33,5 +33,9 @@ public:
 
     // Print memory contents for debugging
     static void printMemoryRegion(const Memory& mem, uint16_t start, uint16_t length);
+
+    void defineSolidTile(Memory &mem, uint8_t tileIndex, uint8_t color4bit);
+
+    void fillTileMap(Memory& mem, uint8_t tileIndex);
 };
 #endif

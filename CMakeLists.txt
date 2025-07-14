@@ -23,5 +23,4 @@ add_executable(assembly_project
         src/DataLoader.cpp
         src/graphics.cpp
 )
-
 target_link_libraries(assembly_project sfml-graphics sfml-window sfml-system)

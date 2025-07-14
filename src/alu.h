@@ -7,5 +7,5 @@
 
 class ALU {
 public:
-    void execute(const DecodedInstruction& instr, Registers& regs, Memory& mem, uint16_t& pc, bool& halted, Ecalls& ecalls, graphics& gfx);
+    void execute(const DecodedInstruction& instr, Registers& regs, Memory& mem, uint16_t& pc, bool& halted, Ecalls& ecalls, Graphics& gfx);
 };

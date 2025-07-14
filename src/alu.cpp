@@ -6,7 +6,7 @@ static int16_t sign_extend(uint16_t val, int bits) {
     return (val ^ mask) - mask;
 }
 
-void ALU::execute(const DecodedInstruction& d, Registers& regs, Memory& mem, uint16_t& pc, bool& halted, Ecalls& ecalls, graphics& gfx) {
+void ALU::execute(const DecodedInstruction& d, Registers& regs, Memory& mem, uint16_t& pc, bool& halted, Ecalls& ecalls, Graphics& gfx) {
     const std::string& m = d.mnemonic;
 
     switch (d.format) {
@@ -36,7 +36,7 @@ void ALU::execute(const DecodedInstruction& d, Registers& regs, Memory& mem, uin
                 return;
             }
             else if (m == "JALR") {
-                uint16_t ret_addr = pc + 2;
+                uint16_t ret_addr = pc;
                 pc = regs.get(d.rs2);
                 regs.set(d.rd, ret_addr);
                 return;
@@ -76,8 +76,17 @@ void ALU::execute(const DecodedInstruction& d, Registers& regs, Memory& mem, uin
                 }
                 mem.store16(addr, regs.get(d.rs2));
             } else if (m == "SB") {
-                mem.store8(addr, regs.get(d.rs2) & 0xFF);
+                if (d.format == FORMAT_S && d.s_op == STOP_SB) {
+                    uint16_t addr = regs.get(d.rs1) + d.imm;
+                    uint8_t value = regs.get(d.rs2) & 0xFF;
+                    std::cout << "[SB] Writing " << std::hex << (int)value << " to 0x" << addr << std::endl;
+                }
+
+                uint8_t val = regs.get(d.rs2) & 0xFF;
+               // std::cout << "[SB] Writing " << +val << " to address " << std::hex << addr << "\n";
+                mem.store8(addr, val);
             }
+
             break;
         }
 
@@ -100,25 +109,33 @@ void ALU::execute(const DecodedInstruction& d, Registers& regs, Memory& mem, uin
 
         case FORMAT_B: {
             bool cond = false;
-            if (m == "BEQ") cond = regs.get(d.rs1) == regs.get(d.rs2);
-            else if (m == "BNE") cond = regs.get(d.rs1) != regs.get(d.rs2);
-            else if (m == "BZ")  cond = regs.get(d.rs1) == 0;
-            else if (m == "BNZ") cond = regs.get(d.rs1) != 0;
-            else if (m == "BLT") cond = int16_t(regs.get(d.rs1)) < int16_t(regs.get(d.rs2));
-            else if (m == "BGE") cond = int16_t(regs.get(d.rs1)) >= int16_t(regs.get(d.rs2));
-            else if (m == "BLTU") cond = regs.get(d.rs1) < regs.get(d.rs2);
-            else if (m == "BGEU") cond = regs.get(d.rs1) >= regs.get(d.rs2);
+            uint16_t rs1_val = regs.get(d.rs1);
+            uint16_t rs2_val = regs.get(d.rs2);
+
+            if (m == "BEQ") cond = rs1_val == rs2_val;
+            else if (m == "BNE") cond = rs1_val != rs2_val;
+            else if (m == "BZ")  cond = rs1_val == 0;  // Only check rs1, ignore rs2
+            else if (m == "BNZ") cond = rs1_val != 0; // Only check rs1, ignore rs2
+            else if (m == "BLT") cond = int16_t(rs1_val) < int16_t(rs2_val);
+            else if (m == "BGE") cond = int16_t(rs1_val) >= int16_t(rs2_val);
+            else if (m == "BLTU") cond = rs1_val < rs2_val;
+            else if (m == "BGEU") cond = rs1_val >= rs2_val;
 
             if (cond) {
-                pc += d.imm;
+                // Calculate target from instruction address (PC was already incremented)
+                pc = (pc ) + d.imm;
                 return; // Don't increment PC again
             }
+            // If condition false, PC increment in main loop handles it
             break;
         }
 
         case FORMAT_J: {
-            regs.set(d.rd, pc + 2); // Save return address
-            pc += d.imm;
+            if (d.rd != 0) { // JAL
+                regs.set(d.rd, pc); // Save return address (already incremented PC)
+            }
+            // Calculate jump target from instruction address
+            pc = (pc - 2) + d.imm;
             return; // Don't increment PC again
         }
 

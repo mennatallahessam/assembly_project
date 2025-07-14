@@ -2,82 +2,77 @@
 #define GRAPHICS_H
 
 #include <SFML/Graphics.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/Main.hpp>
-#include <SFML/System.hpp>
+#include <queue>
 
-#include <vector>
-#include <cstdint>
-#include "Memory.h"
+// Forward declarations
+class Memory;
+class AddressOutOfBoundsException;
 
-class graphics {
+// Graphics constants
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
+#define TILE_SIZE 16
+#define TILES_HORIZONTAL 20
+#define TILES_VERTICAL 15
+#define TOTAL_TILES 300
+#define GRAPHICS_MEMORY_START 0xF000
+#define GRAPHICS_MEMORY_END 0xFFFF
+
+class Graphics {
 private:
-    // Screen dimensions
-    static const int SCREEN_WIDTH = 320;
-    static const int SCREEN_HEIGHT = 240;
-    static const int TILE_SIZE = 16;
-    static const int TILES_HORIZONTAL = 20;
-    static const int TILES_VERTICAL = 15;
-    static const int TOTAL_TILES = 300;
+    Memory* memory;
+    bool needsUpdate;
+    bool isInitialized;
 
-    // Memory addresses
-    static const uint16_t TILE_MAP_ADDRESS = 0xF000;
-    static const uint16_t TILE_DEFINITIONS_ADDRESS = 0xF200;
-    static const uint16_t COLOR_PALETTE_ADDRESS = 0xFA00;
+    // NEW: Keyboard input handling
+    uint16_t lastKeyPressed;
+    bool hasNewKeyPress;
 
-    // SFML objects
-    sf::RenderWindow* window;
+    // SFML graphics objects
     sf::Image screenImage;
     sf::Texture screenTexture;
     sf::Sprite screenSprite;
+    sf::RenderWindow window;
 
-    // Color palette (16 colors)
-    std::vector<sf::Color> colorPalette;
+    // Text system (if you need these)
+    sf::Font textFont;
+    sf::Text displayText;
+    bool textFontLoaded;
 
-    // Graphics enabled flag
-    bool graphicsEnabled;
+    // OLD: Legacy input handling (you might want to remove these)
+    std::queue<char> inputBuffer;
+    bool keyPressed;
+    char lastKey;
 
-    // Tile data cache for performance
-    std::vector<std::vector<uint8_t>> tilePixels; // 16 tiles, each with 256 pixels
+    // Helper method to convert SFML key to ASCII/key code
+    uint16_t convertSFMLKeyToCode(sf::Keyboard::Key key) const;
 
 public:
-    graphics();
-    ~graphics();
+    Graphics(Memory* mem);
+    ~Graphics();
 
-    // Initialize graphics system
-    bool initializeGraphics();
-
-    // Update graphics from memory
-    void updateGraphics(const Memory& mem);
-
-    // Render frame
+    // Core graphics methods
+    bool initialize();
+    bool isWindowOpen();
+    void handleEvents();
+    void markDirty();
+    void update();
     void renderFrame();
 
-    // Check if graphics window is open
-    bool isGraphicsWindowOpen() const;
+    // NEW: Keyboard input methods (for ECALL 7)
+    uint16_t getLastKeyPressed() const;
+    void clearLastKeyPressed();
+    bool isKeyCurrentlyPressed(sf::Keyboard::Key key) const;
 
-    // Handle graphics events
-    void handleGraphicsEvents();
+    // Text display methods
+    void updateTextDisplay();
+    sf::Color getTextColor(uint8_t colorIndex);
+    sf::Color convertPaletteColor(uint8_t paletteValue);
 
-    // Enable/disable graphics
-    void setGraphicsEnabled(bool enabled);
-    bool isGraphicsEnabled() const;
-
-    // Color palette functions
-    void updateColorPalette(const Memory& mem);
-    void displayColorPalette() const;
-    sf::Color getColor(uint8_t colorIndex) const;
-
-    // Tile functions
-    void updateTileDefinitions(const Memory& mem);
-    void renderTiles(const Memory& mem);
-
-    // Debug functions
-    void drawColorPaletteTest();
-    void drawTileTest(uint8_t tileIndex);
-
-    // Test function to set palette colors
-    void setTestPalette(Memory& mem);
+    // REMOVE THESE DUPLICATE/CONFLICTING METHODS:
+    // char getLastKeyPressed();  // <-- REMOVE THIS LINE
+    // bool isKeyPressed();       // <-- REMOVE THIS LINE if it conflicts
+    // void clearKeyBuffer();     // <-- REMOVE THIS LINE if not needed
 };
 
 #endif // GRAPHICS_H

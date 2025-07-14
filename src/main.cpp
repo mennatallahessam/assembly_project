@@ -1,25 +1,20 @@
-// Modified main.cpp with graphics integration
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <iomanip>
 #include <limits>
-
+#include <chrono>
+#include <thread>
 #include "Decoder.h"
 #include "Registers.h"
 #include "Memory.h"
-#include "graphics.h"
+#include "Graphics.h"
 #include "Ecalls.h"
 #include "alu.h"
 #include "DataLoader.h"
-#include <SFML/Graphics.hpp>
-#include <SFML/Network.hpp>
-#include <SFML/Window.hpp>
-#include <SFML/System.hpp>
 
 using namespace std;
 
-// Keep your existing functions
 std::vector<uint16_t> readBinaryFile(const std::string& filename) {
     std::ifstream file(filename, std::ios::binary);
     std::vector<uint16_t> instructions;
@@ -76,7 +71,11 @@ std::string formatInstruction(const DecodedInstruction& d) {
             break;
 
         case FORMAT_B:
-            result += " x" + std::to_string(d.rs1) + ", x" + std::to_string(d.rs2) + ", " + std::to_string(d.imm);
+            if (d.mnemonic == "BZ" || d.mnemonic == "BNZ") {
+                result += " x" + std::to_string(d.rs1) + ", " + std::to_string(d.imm);
+            } else {
+                result += " x" + std::to_string(d.rs1) + ", x" + std::to_string(d.rs2) + ", " + std::to_string(d.imm);
+            }
             break;
 
         case FORMAT_J:
@@ -101,94 +100,101 @@ std::string formatInstruction(const DecodedInstruction& d) {
     return result;
 }
 
-void waitForEnter() {
-    std::cout << "Press Enter to continue..." << std::endl;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-}
+void setupGraphicsDemo(Memory& mem) {
+    std::cout << "Setting up graphics demo with visible colors..." << std::endl;
 
-// Graphics test function
-void setupGraphicsTest(Memory& mem, graphics& gfx) {
-    std::cout << "\n=== Setting up Graphics Test ===" << std::endl;
+    // 1. Set up color palette at 0xFA00 with HIGH CONTRAST colors
+    mem.store8(0xFA00 + 0, 0xE0);  // Bright Red: 111 000 00
+    mem.store8(0xFA00 + 1, 0x03);  // Bright Blue: 000 000 11
+    mem.store8(0xFA00 + 2, 0x1C);  // Bright Green: 000 111 00
+    mem.store8(0xFA00 + 3, 0xFC);  // Yellow: 111 111 00
+    mem.store8(0xFA00 + 4, 0xFF);  // White: 111 111 11
+    mem.store8(0xFA00 + 5, 0x00);  // Black: 000 000 00
 
-    // Set up test color palette
-    gfx.setTestPalette(mem);
-
-    // Create a simple test pattern in tile map
-    try {
-        // Fill tile map with alternating tile patterns
-        for (int i = 0; i < 300; i++) {
-            uint8_t tileIndex = (i % 4); // Use tiles 0-3
-            mem.store8(0xF000 + i, tileIndex);
-        }
-
-        // Create simple test tiles
-        // Tile 0: Solid color (color index 1 - blue)
-        for (int i = 0; i < 128; i++) {
-            mem.store8(0xF200 + i, 0x11); // Both pixels color 1
-        }
-
-        // Tile 1: Checkered pattern (colors 2 and 3)
-        for (int i = 0; i < 128; i++) {
-            int pixelPair = i;
-            int row = (pixelPair * 2) / 16;
-            int col = (pixelPair * 2) % 16;
-
-            bool checker = ((row / 2) + (col / 2)) % 2;
-            uint8_t colorPair = checker ? 0x23 : 0x32; // Alternate colors 2 and 3
-            mem.store8(0xF200 + 128 + i, colorPair);
-        }
-
-        // Tile 2: Gradient pattern
-        for (int i = 0; i < 128; i++) {
-            uint8_t color = (i * 15) / 127; // Gradient from 0 to 15
-            mem.store8(0xF200 + 256 + i, (color << 4) | color);
-        }
-
-        // Tile 3: Border pattern
-        for (int i = 0; i < 128; i++) {
-            int pixelPair = i;
-            int row = (pixelPair * 2) / 16;
-            int col = (pixelPair * 2) % 16;
-
-            bool border = (row == 0 || row == 15 || col == 0 || col == 15);
-            uint8_t colorPair = border ? 0x77 : 0x00; // White border, black center
-            mem.store8(0xF200 + 384 + i, colorPair);
-        }
-
-        std::cout << "Graphics test pattern created" << std::endl;
-
-    } catch (const AddressOutOfBoundsException& e) {
-        std::cerr << "Error setting up graphics test: " << e.what() << std::endl;
+    // Initialize remaining palette to distinct colors
+    for (int i = 6; i < 16; i++) {
+        mem.store8(0xFA00 + i, 0x00);  // Black for unused
     }
+
+    // 2. Define tiles with SOLID colors
+    // Tile 0: Pure Red (palette index 0)
+    for (int i = 0; i < 128; i++) {
+        mem.store8(0xF200 + i, 0x00);  // 0x00 = palette[0] in both nibbles
+    }
+
+    // Tile 1: Pure Blue (palette index 1)
+    for (int i = 0; i < 128; i++) {
+        mem.store8(0xF200 + 128 + i, 0x11);  // 0x11 = palette[1] in both nibbles
+    }
+
+    // Tile 2: Pure Green (palette index 2)
+    for (int i = 0; i < 128; i++) {
+        mem.store8(0xF200 + 256 + i, 0x22);  // 0x22 = palette[2] in both nibbles
+    }
+
+    // Tile 3: Pure Yellow (palette index 3)
+    for (int i = 0; i < 128; i++) {
+        mem.store8(0xF200 + 384 + i, 0x33);  // 0x33 = palette[3] in both nibbles
+    }
+
+    // 3. Create a clear pattern in the tile map
+    // Clear the entire tile map first
+    for (int i = 0; i < 300; i++) {
+        mem.store8(0xF000 + i, 255);  // Invalid tile (should render as black/transparent)
+    }
+
+    // Create vertical stripes pattern
+    for (int row = 0; row < 15; row++) {
+        for (int col = 0; col < 20; col++) {
+            uint16_t addr = 0xF000 + row * 20 + col;
+            uint8_t tile_index;
+
+            if (col < 5) {
+                tile_index = 0;  // Red columns (0-4)
+            } else if (col < 10) {
+                tile_index = 1;  // Blue columns (5-9)
+            } else if (col < 15) {
+                tile_index = 2;  // Green columns (10-14)
+            } else {
+                tile_index = 3;  // Yellow columns (15-19)
+            }
+
+            mem.store8(addr, tile_index);
+        }
+    }
+
+    std::cout << "Graphics demo setup complete!" << std::endl;
+    std::cout << "Expected: 4 vertical color stripes - Red, Blue, Green, Yellow" << std::endl;
 }
 
 int main() {
     Decoder decoder;
     Registers regs;
     Memory mem;
-    graphics gfx;
+    Graphics gfx(&mem);
     Ecalls ecalls;
     ALU alu;
     DataSection dataSection;
 
     // Initialize graphics system
-    bool graphicsReady = gfx.initializeGraphics();
-    if (graphicsReady) {
-        std::cout << "Graphics system initialized successfully!" << std::endl;
-        setupGraphicsTest(mem, gfx);
-
-        // Initial graphics update
-        gfx.updateGraphics(mem);
-        gfx.renderFrame();
-
-        std::cout << "\nGraphics Controls:" << std::endl;
-        std::cout << "  P - Display color palette info" << std::endl;
-        std::cout << "  T - Show color palette test" << std::endl;
-        std::cout << "  Close graphics window to exit graphics mode" << std::endl;
+    if (!gfx.initialize()) {
+        std::cerr << "Failed to initialize graphics system!" << std::endl;
+        return 1;
     }
 
-    // Load your program
-    std::string programPath = "C:/Users/ASUS/Desktop/z16-fork/assembler/lasttest.bin";
+    // Initialize a simple color palette for testing
+    std::cout << "Setting up test color palette..." << std::endl;
+    mem.store8(0xFA00, 0xE0);  // Red
+    mem.store8(0xFA01, 0x03);  // Blue
+    mem.store8(0xFA02, 0x1C);  // Green
+    mem.store8(0xFA03, 0xFC);  // Yellow
+    mem.store8(0xFA04, 0xFF);  // White
+    mem.store8(0xFA05, 0xFC);  // Yellow
+    for (int i = 6; i < 16; i++) {
+        mem.store8(0xFA00 + i, 0x00);  // Black for unused colors
+    }
+
+    std::string programPath = "C:/Users/ASUS/Desktop/z16-fork/assembler/video.bin";
     std::vector<uint16_t> instructions = readBinaryFile(programPath);
 
     if (instructions.empty()) {
@@ -196,71 +202,99 @@ int main() {
         return 1;
     }
 
-    // Load instructions into memory
+    std::cout << "Loaded " << instructions.size() << " instructions from " << programPath << std::endl;
+
+    // Load instructions into memory starting at 0x0000
     for (size_t i = 0; i < instructions.size(); ++i) {
         mem.store16(i * 2, instructions[i]);
     }
 
     uint16_t pc = 0;
     bool halted = false;
+    int instruction_count = 0;
+    int loop_detection_count = 0;
+    uint16_t last_pc = 0xFFFF;
 
-    std::cout << "\nStarting program execution." << std::endl;
-    if (graphicsReady) {
-        std::cout << "Graphics window is open - you can interact with it while the program runs." << std::endl;
-    }
-    std::cout << "Press Enter after each instruction to continue.\n" << std::endl;
+    std::cout << "\n" << std::string(50, '=') << std::endl;
+    std::cout << "         REAL ZX16 INSTRUCTION SIMULATION" << std::endl;
+    std::cout << std::string(50, '=') << std::endl;
+    std::cout << "\nRunning ZX16 assembly program..." << std::endl;
+    std::cout << "Graphics will be created by simulated ZX16 instructions." << std::endl;
 
-    while (!halted) {
-        // Handle graphics events (non-blocking)
-        if (graphicsReady && gfx.isGraphicsWindowOpen()) {
-            gfx.handleGraphicsEvents();
-        }
-
+    while (!halted && gfx.isWindowOpen()) {
         uint16_t inst = mem.load16(pc);
         DecodedInstruction d = decoder.decode(inst);
 
+        // Check if this is a NOP and skip display if desired
         bool is_nop = (d.format == FORMAT_R && d.mnemonic == "ADD" && d.rd == 0 && d.rs1 == 0 && d.rs2 == 0);
 
-        if (!is_nop) {
+        // Show first 20 instructions for debugging
+        if (!is_nop && instruction_count < 20) {
             std::string formatted = formatInstruction(d);
             std::cout << std::hex << std::setw(4) << std::setfill('0') << pc << ": " << formatted << std::endl;
         }
 
-        // Execute instruction
+        // Detect infinite loops
+        if (pc == last_pc) {
+            loop_detection_count++;
+            if (loop_detection_count > 1000) {
+                std::cout << "\nINFINITE LOOP DETECTED at PC=0x" << std::hex << pc << std::endl;
+                std::cout << "Breaking execution to prevent hang..." << std::endl;
+                break;
+            }
+        } else {
+            loop_detection_count = 0;
+            last_pc = pc;
+        }
+
+        // Handle ECALL specially since it needs syscall_num set
         if (d.format == FORMAT_SYS && d.sys_op == SYSOP_ECALL) {
             DecodedInstruction ecall_instr = d;
             ecall_instr.syscall_num = d.imm;
+
             ecalls.handle(ecall_instr, regs, mem, halted, gfx);
             pc += 2;
         } else {
+            // Store current PC for ALU execution
             uint16_t next_pc = pc + 2;
+
+            // Execute instruction using ALU
             alu.execute(d, regs, mem, next_pc, halted, ecalls, gfx);
+
+            // Update PC
             pc = next_pc;
         }
+
         regs.setPC(pc);
+        instruction_count++;
 
-        // Update graphics after each instruction (if graphics are enabled)
-        if (graphicsReady && gfx.isGraphicsWindowOpen()) {
-            gfx.updateGraphics(mem);
-            gfx.renderFrame();
+        // Mark graphics for update and render
+        gfx.markDirty();
+        gfx.update();
+
+        // Show progress occasionally
+        if (instruction_count % 1000 == 0) {
+            std::cout << "Instructions executed: " << instruction_count << std::endl;
         }
 
-        // Wait for input (except for NOPs)
-        if (!is_nop && !halted) {
-            waitForEnter();
+        // Safety check to prevent infinite loops
+        if (instruction_count > 100000) {
+            std::cout << "Stopping after 100000 instructions to prevent infinite loop." << std::endl;
+            break;
         }
+
+        // Small delay to prevent the CPU from running too fast (but not too slow)
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 
     std::cout << "\nProgram execution completed." << std::endl;
+    std::cout << "Instructions executed: " << instruction_count << std::endl;
 
-    // Keep graphics window open for a bit after program ends
-    if (graphicsReady && gfx.isGraphicsWindowOpen()) {
-        std::cout << "Graphics window is still open. Close it to exit." << std::endl;
-        while (gfx.isGraphicsWindowOpen()) {
-            gfx.handleGraphicsEvents();
-            gfx.renderFrame();
-            sf::sleep(sf::milliseconds(16)); // ~60 FPS
-        }
+    // Keep graphics window open
+    std::cout << "\nGraphics window will remain open. Close window to exit." << std::endl;
+    while (gfx.isWindowOpen()) {
+        gfx.update();
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 
     return 0;

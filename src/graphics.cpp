@@ -1,332 +1,372 @@
-#include "graphics.h"
+#include "Graphics.h"
+#include "Memory.h"
 #include <iostream>
-#include <iomanip>
+#include <cstring>
 
-graphics::graphics() : window(nullptr), graphicsEnabled(false) {
-    // Initialize color palette with default colors
-    colorPalette.resize(16);
-    tilePixels.resize(16);
-    
-    // Initialize each tile with 256 pixels
-    for (int i = 0; i < 16; i++) {
-        tilePixels[i].resize(256, 0); // 16x16 = 256 pixels per tile
-    }
-    
-    // Set default palette
-    colorPalette[0] = sf::Color::Black;
-    colorPalette[1] = sf::Color::Blue;
-    colorPalette[2] = sf::Color::Green;
-    colorPalette[3] = sf::Color::Cyan;
-    colorPalette[4] = sf::Color::Red;
-    colorPalette[5] = sf::Color::Magenta;
-    colorPalette[6] = sf::Color::Yellow;
-    colorPalette[7] = sf::Color::White;
-    colorPalette[8] = sf::Color(64, 64, 64);
-    colorPalette[9] = sf::Color(0, 0, 128);
-    colorPalette[10] = sf::Color(0, 128, 0);
-    colorPalette[11] = sf::Color(0, 128, 128);
-    colorPalette[12] = sf::Color(128, 0, 0);
-    colorPalette[13] = sf::Color(128, 0, 128);
-    colorPalette[14] = sf::Color(128, 128, 0);
-    colorPalette[15] = sf::Color(192, 192, 192);
+// Add these implementations to your Graphics.cpp file
+
+// In the constructor, initialize the new members:
+// 1. MODIFY YOUR CONSTRUCTOR to initialize the new variables:
+// ADD THESE METHODS TO YOUR graphics.cpp FILE:
+
+// 1. First, add these member variables to your Graphics constructor
+// Modify your existing constructor to include the new member variable initialization:
+Graphics::Graphics(Memory* mem)
+    : memory(mem),
+      needsUpdate(true),
+      isInitialized(false),
+      screenImage(),
+      screenTexture(),
+      screenSprite(),
+      window(),
+      lastKeyPressed(0),        // ADD THIS LINE
+      hasNewKeyPress(false) {   // ADD THIS LINE
+    std::cout << "Graphics system created, waiting for initialization..." << std::endl;
 }
 
-graphics::~graphics() {
-    if (window) {
-        delete window;
+// 2. ADD THESE NEW METHODS at the end of your graphics.cpp file:
+
+uint16_t Graphics::getLastKeyPressed() const {
+    if (hasNewKeyPress) {
+        return lastKeyPressed;
+    }
+    return 0; // No key pressed
+}
+
+void Graphics::clearLastKeyPressed() {
+    lastKeyPressed = 0;
+    hasNewKeyPress = false;
+}
+
+bool Graphics::isKeyCurrentlyPressed(sf::Keyboard::Key key) const {
+    return sf::Keyboard::isKeyPressed(key);
+}
+
+uint16_t Graphics::convertSFMLKeyToCode(sf::Keyboard::Key key) const {
+    // Convert SFML key codes to ASCII or custom codes
+    switch (key) {
+        // Letters (A-Z) - return lowercase
+        case sf::Keyboard::A: return 'a';
+        case sf::Keyboard::B: return 'b';
+        case sf::Keyboard::C: return 'c';
+        case sf::Keyboard::D: return 'd';
+        case sf::Keyboard::E: return 'e';
+        case sf::Keyboard::F: return 'f';
+        case sf::Keyboard::G: return 'g';
+        case sf::Keyboard::H: return 'h';
+        case sf::Keyboard::I: return 'i';
+        case sf::Keyboard::J: return 'j';
+        case sf::Keyboard::K: return 'k';
+        case sf::Keyboard::L: return 'l';
+        case sf::Keyboard::M: return 'm';
+        case sf::Keyboard::N: return 'n';
+        case sf::Keyboard::O: return 'o';
+        case sf::Keyboard::P: return 'p';
+        case sf::Keyboard::Q: return 'q';
+        case sf::Keyboard::R: return 'r';
+        case sf::Keyboard::S: return 's';
+        case sf::Keyboard::T: return 't';
+        case sf::Keyboard::U: return 'u';
+        case sf::Keyboard::V: return 'v';
+        case sf::Keyboard::W: return 119;
+        case sf::Keyboard::X: return 'x';
+        case sf::Keyboard::Y: return 'y';
+        case sf::Keyboard::Z: return 'z';
+
+        // Numbers (0-9)
+        case sf::Keyboard::Num0: return '0';
+        case sf::Keyboard::Num1: return '1';
+        case sf::Keyboard::Num2: return '2';
+        case sf::Keyboard::Num3: return '3';
+        case sf::Keyboard::Num4: return '4';
+        case sf::Keyboard::Num5: return '5';
+        case sf::Keyboard::Num6: return '6';
+        case sf::Keyboard::Num7: return '7';
+        case sf::Keyboard::Num8: return '8';
+        case sf::Keyboard::Num9: return '9';
+
+        // Special keys
+        case sf::Keyboard::Space: return ' ';
+        case sf::Keyboard::Enter: return '\n';
+        case sf::Keyboard::Escape: return 27; // ESC
+        case sf::Keyboard::Tab: return '\t';
+        case sf::Keyboard::Backspace: return 8; // BS
+
+        // Arrow keys (custom codes)
+        case sf::Keyboard::Up: return 256;
+        case sf::Keyboard::Down: return 257;
+        case sf::Keyboard::Left: return 258;
+        case sf::Keyboard::Right: return 259;
+
+        default:
+            return 0; // Unknown key
     }
 }
 
-bool graphics::initializeGraphics() {
+// 3. MODIFY your existing handleEvents() method to include keyboard handling:
+// Replace your existing handleEvents() method with this version:
+void Graphics::handleEvents() {
+    sf::Event event;
+    while (window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+            window.close();
+        }
+
+        // Handle keyboard input - capture key presses
+        if (event.type == sf::Event::KeyPressed) {
+            uint16_t keyCode = convertSFMLKeyToCode(event.key.code);
+            if (keyCode != 0) {
+                lastKeyPressed = keyCode;
+                hasNewKeyPress = true;
+                std::cout << "SFML Key pressed: " << (char)keyCode << " (code: " << keyCode << ")" << std::endl;
+            }
+        }
+
+        if (event.type == sf::Event::KeyReleased) {
+            // Optional: handle key releases if needed
+            std::cout << "SFML Key released: " << event.key.code << std::endl;
+        }
+    }
+}
+
+
+
+Graphics::~Graphics() {
+    if (window.isOpen()) {
+        window.close();
+    }
+    std::cout << "Graphics system destroyed." << std::endl;
+}
+
+bool Graphics::initialize() {
     try {
-        // Create window
-        window = new sf::RenderWindow(sf::VideoMode(SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2), 
-                                     "ZX16 Simulator Graphics");
-        window->setFramerateLimit(60);
-        
-        // Initialize screen image
+        const int scaleFactor = 3;
+        // Create SFML window with correct ZX16 resolution
+        window.create(sf::VideoMode(320, 240),
+                     "ZX16 Simulator Graphics");
+window.hasFocus();
+        // Set frame rate limit (60 FPS)
+        window.setFramerateLimit(60);
+
+        // Create the image that will hold our pixel data
         screenImage.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
-        screenTexture.create(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // Create texture from image
+        if (!screenTexture.loadFromImage(screenImage)) {
+            std::cerr << "Error: Failed to create screen texture!" << std::endl;
+            return false;
+        }
+
+        // Create sprite from texture
         screenSprite.setTexture(screenTexture);
-        screenSprite.setScale(2.0f, 2.0f); // Scale up for visibility
-        
-        graphicsEnabled = true;
-        
-        std::cout << "ZX16 Graphics System initialized successfully" << std::endl;
-        std::cout << "Screen: " << SCREEN_WIDTH << "x" << SCREEN_HEIGHT << " pixels" << std::endl;
-        std::cout << "Tiles: " << TILES_HORIZONTAL << "x" << TILES_VERTICAL << " grid" << std::endl;
-        
+
+        isInitialized = true;
+        std::cout << "Graphics system initialized successfully!" << std::endl;
+        std::cout << "Screen: " << SCREEN_WIDTH << "x" << SCREEN_HEIGHT << std::endl;
+        std::cout << "Tiles: " << TILES_HORIZONTAL << "x" << TILES_VERTICAL
+                  << " (" << TOTAL_TILES << " total)" << std::endl;
+        std::cout << "Graphics memory: 0x" << std::hex << GRAPHICS_MEMORY_START
+                  << " - 0x" << GRAPHICS_MEMORY_END << std::dec << std::endl;
+        std::cout << "Tile Map: 0xF000-0xF12B (300 bytes)" << std::endl;
+        std::cout << "Tile Data: 0xF200-0xF9FF (2048 bytes)" << std::endl;
+        std::cout << "Color Palette: 0xFA00-0xFA0F (16 bytes)" << std::endl;
+
         return true;
-    } catch (const std::exception& e) {
-        std::cerr << "Failed to initialize graphics: " << e.what() << std::endl;
-        graphicsEnabled = false;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error initializing graphics: " << e.what() << std::endl;
         return false;
     }
 }
 
-void graphics::updateColorPalette(const Memory& mem) {
-    try {
-        for (int i = 0; i < 16; i++) {
-            uint8_t colorByte = mem.load8(COLOR_PALETTE_ADDRESS + i);
-            
-            // Extract RGB values according to ZX16 specification
-            uint8_t red = (colorByte >> 5) & 0x07;    // bits 5-7
-            uint8_t green = (colorByte >> 2) & 0x07;  // bits 2-4
-            uint8_t blue = colorByte & 0x03;          // bits 0-1
-            
-            // Scale to 0-255 range
-            red = (red * 255) / 7;
-            green = (green * 255) / 7;
-            blue = (blue * 255) / 3;
-            
-            colorPalette[i] = sf::Color(red, green, blue);
-        }
-    } catch (const AddressOutOfBoundsException& e) {
-        std::cerr << "Error reading color palette: " << e.what() << std::endl;
+bool Graphics::isWindowOpen() {
+    return window.isOpen();
+}
+
+
+void Graphics::markDirty() {
+    needsUpdate = true;
+}
+
+void Graphics::update() {
+    if (!isInitialized) {
+        return;
+    }
+
+    // Handle window events first
+    handleEvents();
+
+    // Only render if something changed
+    if (needsUpdate) {
+        renderFrame();
+        needsUpdate = false;
     }
 }
 
-void graphics::updateTileDefinitions(const Memory& mem) {
-    try {
-        for (int tileIndex = 0; tileIndex < 16; tileIndex++) {
-            uint16_t tileAddress = TILE_DEFINITIONS_ADDRESS + (tileIndex * 128);
-            
-            // Each tile is 16x16 pixels, stored as 4-bit values packed into bytes
-            for (int pixelPair = 0; pixelPair < 128; pixelPair++) {
-                uint8_t packedPixels = mem.load8(tileAddress + pixelPair);
-                
-                // Extract two 4-bit pixel values
-                uint8_t pixel1 = packedPixels & 0x0F;        // Lower 4 bits
-                uint8_t pixel2 = (packedPixels >> 4) & 0x0F; // Upper 4 bits
-                
-                // Store in tile cache
-                tilePixels[tileIndex][pixelPair * 2] = pixel1;
-                tilePixels[tileIndex][pixelPair * 2 + 1] = pixel2;
+// Convert 3-3-2 RGB palette byte to SFML Color
+sf::Color Graphics::convertPaletteColor(uint8_t paletteValue) {
+    // Extract RGB components using ZX16 3-3-2 format
+    // Bits 7-5: Red (3 bits)
+    // Bits 4-2: Green (3 bits)
+    // Bits 1-0: Blue (2 bits)
+
+    uint8_t red3   = (paletteValue >> 5) & 0x07;  // Extract bits 7-5
+    uint8_t green3 = (paletteValue >> 2) & 0x07;  // Extract bits 4-2
+    uint8_t blue2  = (paletteValue >> 0) & 0x03;  // Extract bits 1-0
+
+    // Convert to 8-bit values (scale up)
+    uint8_t red8   = (red3   * 255) / 7;  // Scale 3-bit to 8-bit
+    uint8_t green8 = (green3 * 255) / 7;  // Scale 3-bit to 8-bit
+    uint8_t blue8  = (blue2  * 255) / 3;  // Scale 2-bit to 8-bit
+
+    return sf::Color(red8, green8, blue8);
+}
+void Graphics::renderFrame() {
+    if (!memory) {
+        std::cerr << "Error: Memory not available for graphics rendering!" << std::endl;
+        return;
+    }
+
+    // Clear screen to black
+    screenImage.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
+
+    static bool first_render = true;
+    if (first_render) {
+        std::cout << "=== FIRST RENDER DEBUG ===" << std::endl;
+        first_render = false;
+    }
+
+    static int frame_count = 0;
+    bool show_debug = (frame_count < 1); // Only show debug for first frame
+    frame_count++;
+
+    // Load color palette from memory (0xFA00 - 0xFA0F)
+    sf::Color palette[16];
+    for (int i = 0; i < 16; ++i) {
+        try {
+            uint8_t paletteValue = memory->load8(0xFA00 + i);
+            palette[i] = convertPaletteColor(paletteValue);
+
+            if (i < 5 && show_debug) {  // Debug first 5 palette entries only on first frame
+                std::cout << "Palette[" << i << "] = 0x" << std::hex << (int)paletteValue
+                          << " -> RGB(" << (int)palette[i].r << "," << (int)palette[i].g
+                          << "," << (int)palette[i].b << ")" << std::endl;
             }
+        } catch (const AddressOutOfBoundsException& e) {
+            // Use bright default colors for testing
+            switch(i) {
+                case 0: palette[i] = sf::Color::Red; break;
+                case 1: palette[i] = sf::Color::Blue; break;
+                case 2: palette[i] = sf::Color::Green; break;
+                case 3: palette[i] = sf::Color::Yellow; break;
+                case 4: palette[i] = sf::Color::White; break;
+                default: palette[i] = sf::Color::Black; break;
+            }
+            std::cout << "Palette[" << i << "] = DEFAULT RGB(" << (int)palette[i].r
+                      << "," << (int)palette[i].g << "," << (int)palette[i].b << ")" << std::endl;
         }
-    } catch (const AddressOutOfBoundsException& e) {
-        std::cerr << "Error reading tile definitions: " << e.what() << std::endl;
     }
-}
 
-void graphics::renderTiles(const Memory& mem) {
-    try {
-        // Clear screen
-        screenImage.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
-        
-        // Render each tile position
-        for (int tileY = 0; tileY < TILES_VERTICAL; tileY++) {
-            for (int tileX = 0; tileX < TILES_HORIZONTAL; tileX++) {
-                // Get tile index from tile map
-                uint16_t tileMapIndex = tileY * TILES_HORIZONTAL + tileX;
-                uint8_t tileIndex = mem.load8(TILE_MAP_ADDRESS + tileMapIndex);
-                
-                // Clamp tile index to valid range
-                if (tileIndex >= 16) {
-                    tileIndex = 0;
+    // Render tiles - Focus on first 3x3 for debugging
+    int tiles_rendered = 0;
+    for (int tileY = 0; tileY < TILES_VERTICAL; ++tileY) {
+        for (int tileX = 0; tileX < TILES_HORIZONTAL; ++tileX) {
+            // Get tile index from tile map (0xF000 + row*20 + col)
+            uint16_t mapAddr = 0xF000 + tileY * TILES_HORIZONTAL + tileX;
+            uint8_t tileIndex;
+
+            try {
+                tileIndex = memory->load8(mapAddr);
+
+                // Debug output for first 3x3 tiles only on first frame
+                if (tileY < 3 && tileX < 3 && show_debug) {
+                    std::cout << "Tile at (" << tileX << "," << tileY
+                              << ") addr=0x" << std::hex << mapAddr
+                              << " index=" << std::dec << (int)tileIndex << std::endl;
                 }
-                
-                // Render this tile
-                for (int pixelY = 0; pixelY < TILE_SIZE; pixelY++) {
-                    for (int pixelX = 0; pixelX < TILE_SIZE; pixelX++) {
-                        int pixelIndex = pixelY * TILE_SIZE + pixelX;
-                        uint8_t colorIndex = tilePixels[tileIndex][pixelIndex];
-                        
-                        // Calculate screen position
-                        int screenX = tileX * TILE_SIZE + pixelX;
-                        int screenY = tileY * TILE_SIZE + pixelY;
-                        
-                        // Set pixel color
-                        screenImage.setPixel(screenX, screenY, getColor(colorIndex));
+            } catch (const AddressOutOfBoundsException& e) {
+                if (tileY < 3 && tileX < 3 && show_debug) {
+                    std::cout << "ERROR: Cannot read tile map at 0x" << std::hex << mapAddr << std::endl;
+                }
+                continue;
+            }
+
+            // Only render valid tiles (0-15)
+            if (tileIndex >= 16) {
+                continue;
+            }
+
+            tiles_rendered++;
+
+            // Get tile data start address (0xF200 + tileIndex * 128)
+            uint16_t tileStart = 0xF200 + tileIndex * 128;
+
+            if (tileY < 3 && tileX < 3) {
+                std::cout << "Rendering tile " << (int)tileIndex
+                          << " from address 0x" << std::hex << tileStart << std::endl;
+            }
+
+            // Render each pixel in the 16x16 tile
+            for (int py = 0; py < TILE_SIZE; ++py) {
+                for (int px = 0; px < TILE_SIZE; ++px) {
+                    // Calculate pixel index within tile (row-major order)
+                    int pixelIndex = py * TILE_SIZE + px;
+
+                    // Each byte contains 2 pixels (4 bits each)
+                    int byteOffset = pixelIndex / 2;
+
+                    uint8_t packed;
+                    try {
+                        packed = memory->load8(tileStart + byteOffset);
+                    } catch (const AddressOutOfBoundsException& e) {
+                        continue;
+                    }
+
+                    // Extract 4-bit color index
+                    uint8_t colorIndex;
+                    if (pixelIndex % 2 == 0) {
+                        // Even pixel: lower 4 bits
+                        colorIndex = packed & 0x0F;
+                    } else {
+                        // Odd pixel: upper 4 bits
+                        colorIndex = (packed >> 4) & 0x0F;
+                    }
+
+                    // Debug first pixel of first tile only on first frame
+                    if (tileY == 0 && tileX == 0 && py == 0 && px == 0 && show_debug) {
+                        std::cout << "First pixel: packed=0x" << std::hex << (int)packed
+                                  << " colorIndex=" << std::dec << (int)colorIndex << std::endl;
+                    }
+
+                    // Get color from palette
+                    sf::Color color = palette[colorIndex];
+
+                    // Calculate screen coordinates
+                    int screenX = tileX * TILE_SIZE + px;
+                    int screenY = tileY * TILE_SIZE + py;
+
+                    // Set pixel in screen image
+                    if (screenX < SCREEN_WIDTH && screenY < SCREEN_HEIGHT) {
+                        screenImage.setPixel(screenX, screenY, color);
                     }
                 }
             }
         }
-    } catch (const AddressOutOfBoundsException& e) {
-        std::cerr << "Error rendering tiles: " << e.what() << std::endl;
+    }
+
+    if (show_debug) {
+        std::cout << "Total tiles rendered: " << std::hex << tiles_rendered << std::dec << std::endl;
+    }
+
+    // Update texture and display
+    screenTexture.loadFromImage(screenImage);
+    window.clear();
+    window.draw(screenSprite);
+    window.display();
+
+    static int frameCount = 0;
+    frameCount++;
+    if (frameCount % 60 == 0) {
+        std::cout << "Graphics frame " << frameCount << " complete" << std::endl;
     }
 }
-
-void graphics::updateGraphics(const Memory& mem) {
-    if (!graphicsEnabled || !window) return;
-    
-    // Update color palette from memory
-    updateColorPalette(mem);
-    
-    // Update tile definitions from memory
-    updateTileDefinitions(mem);
-    
-    // Render tiles to screen
-    renderTiles(mem);
-    
-    // Update texture
-    screenTexture.update(screenImage);
-}
-
-void graphics::renderFrame() {
-    if (!graphicsEnabled || !window) return;
-    
-    window->clear();
-    window->draw(screenSprite);
-    window->display();
-}
-
-bool graphics::isGraphicsWindowOpen() const {
-    return window && window->isOpen();
-}
-
-void graphics::handleGraphicsEvents() {
-    if (!window) return;
-    
-    sf::Event event;
-    while (window->pollEvent(event)) {
-        if (event.type == sf::Event::Closed) {
-            window->close();
-        }
-        
-        // Add keyboard shortcuts for testing
-        if (event.type == sf::Event::KeyPressed) {
-            switch (event.key.code) {
-                case sf::Keyboard::Key::P:
-                    displayColorPalette();
-                    break;
-                case sf::Keyboard::Key::T:
-                    drawColorPaletteTest();
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-}
-
-void graphics::setGraphicsEnabled(bool enabled) {
-    graphicsEnabled = enabled;
-}
-
-bool graphics::isGraphicsEnabled() const {
-    return graphicsEnabled;
-}
-
-sf::Color graphics::getColor(uint8_t colorIndex) const {
-    if (colorIndex >= 16) {
-        return colorPalette[0]; // Default to black
-    }
-    return colorPalette[colorIndex];
-}
-
-void graphics::displayColorPalette() const {
-    std::cout << "\n=== ZX16 Color Palette ===" << std::endl;
-    for (int i = 0; i < 16; i++) {
-        sf::Color color = colorPalette[i];
-        std::cout << "Color " << std::setw(2) << i << ": RGB(" 
-                  << std::setw(3) << (int)color.r << ", " 
-                  << std::setw(3) << (int)color.g << ", " 
-                  << std::setw(3) << (int)color.b << ")" << std::endl;
-    }
-    std::cout << "==========================" << std::endl;
-}
-
-void graphics::drawColorPaletteTest() {
-    const int colorBlockSize = 40;
-    
-    // Clear screen
-    screenImage.create(SCREEN_WIDTH, SCREEN_HEIGHT, sf::Color::Black);
-    
-    // Draw color palette as 4x4 grid
-    for (int i = 0; i < 16; i++) {
-        int blockX = (i % 4) * colorBlockSize;
-        int blockY = (i / 4) * colorBlockSize;
-        
-        sf::Color color = colorPalette[i];
-        
-        // Draw block
-        for (int dy = 0; dy < colorBlockSize && (blockY + dy) < SCREEN_HEIGHT; dy++) {
-            for (int dx = 0; dx < colorBlockSize && (blockX + dx) < SCREEN_WIDTH; dx++) {
-                screenImage.setPixel(blockX + dx, blockY + dy, color);
-            }
-        }
-    }
-    
-    // Update texture
-    screenTexture.update(screenImage);
-}
-
-void graphics::setTestPalette(Memory& mem) {
-    // Set up a test color palette in memory
-    const uint8_t testColors[16] = {
-        0x00, // 0: Black (000|000|00)
-        0x03, // 1: Blue (000|000|11)
-        0x1C, // 2: Green (000|111|00)
-        0x1F, // 3: Cyan (000|111|11)
-        0xE0, // 4: Red (111|000|00)
-        0xE3, // 5: Magenta (111|000|11)
-        0xFC, // 6: Yellow (111|111|00)
-        0xFF, // 7: White (111|111|11)
-        0x49, // 8: Dark Gray (010|010|01)
-        0x02, // 9: Dark Blue (000|000|10)
-        0x0C, // 10: Dark Green (000|011|00)
-        0x0E, // 11: Dark Cyan (000|011|10)
-        0x60, // 12: Dark Red (011|000|00)
-        0x62, // 13: Dark Magenta (011|000|10)
-        0x6C, // 14: Dark Yellow (011|011|00)
-        0xDB  // 15: Light Gray (110|110|11)
-    };
-    
-    try {
-        for (int i = 0; i < 16; i++) {
-            mem.store8(COLOR_PALETTE_ADDRESS + i, testColors[i]);
-        }
-        std::cout << "Test color palette loaded into memory" << std::endl;
-    } catch (const AddressOutOfBoundsException& e) {
-        std::cerr << "Error setting test palette: " << e.what() << std::endl;
-    }
-}
-
-// Example integration with your main.cpp
-/* Add this to your main.cpp:
-
-#include "graphics.h"
-
-int main() {
-    // ... your existing code ...
-    
-    Decoder decoder;
-    Registers regs;
-    Memory mem;
-    graphics gfx;  // Your graphics object already exists
-    Ecalls ecalls;
-    ALU alu;
-    
-    // Initialize graphics system
-    if (gfx.initializeGraphics()) {
-        std::cout << "Graphics system ready" << std::endl;
-        
-        // Set up test palette
-        gfx.setTestPalette(mem);
-        
-        // Test the color palette
-        gfx.updateGraphics(mem);
-        gfx.drawColorPaletteTest();
-        gfx.renderFrame();
-        
-        std::cout << "Press 'P' to display palette info, 'T' to test colors" << std::endl;
-    }
-    
-    // ... rest of your simulation loop ...
-    
-    while (!halted) {
-        // ... your instruction execution ...
-        
-        // Update graphics if enabled
-        if (gfx.isGraphicsEnabled() && gfx.isGraphicsWindowOpen()) {
-            gfx.handleGraphicsEvents();
-            gfx.updateGraphics(mem);
-            gfx.renderFrame();
-        }
-    }
-    
-    return 0;
-}
-
-*/

@@ -112,3 +112,42 @@ void DataLoader::printMemoryRegion(const Memory& mem, uint16_t start, uint16_t l
     }
     std::cout << "==========================" << std::endl;
 }
+
+void DataLoader::defineSolidTile(Memory& mem, uint8_t tileIndex, uint8_t color4bit) {
+    if (tileIndex >= 16) {
+        std::cerr << "Invalid tile index: " << (int)tileIndex << std::endl;
+        return;
+    }
+
+    uint16_t tileAddr = 0xF200 + tileIndex * 128;
+    uint8_t packed = (color4bit & 0x0F) | ((color4bit & 0x0F) << 4);  // two pixels per byte
+
+    for (int i = 0; i < 128; ++i) {
+        mem.store8(tileAddr + i, packed);
+    }
+
+    std::cout << "Defined tile " << (int)tileIndex << " filled with color " << std::hex << (int)color4bit << std::endl;
+}
+
+void DataLoader::fillTileMap(Memory& mem, uint8_t tileIndex) {
+    if (tileIndex >= 16) {
+        std::cerr << "Invalid tile index: " << (int)tileIndex << std::endl;
+        return;
+    }
+
+    // Screen: 20 x 15 tiles (row-major)
+    for (int y = 0; y < 15; ++y) {
+        for (int x = 0; x < 20; ++x) {
+            uint16_t addr = 0xF000 + y * 20 + x;
+
+            // Fill only top-left 5×3 area for test
+            if (x < 5 && y < 3) {
+                mem.store8(addr, tileIndex);
+            } else {
+                mem.store8(addr, 0xFF);  // unused tile (transparent / invalid)
+            }
+        }
+    }
+
+    std::cout << "Filled top-left 5x3 tile area with tile " << (int)tileIndex << std::endl;
+}

@@ -8,7 +8,15 @@
 #include <limits>
 #include <thread>
 #include <windows.h>
-void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& mem, bool& halted, graphics& gfx) {
+#include<atomic>
+Ecalls::~Ecalls() {
+    // Clean up any remaining audio thread
+    static std::unique_ptr<std::thread> sound_thread = nullptr;
+    if (sound_thread && sound_thread->joinable()) {
+        sound_thread->join();
+    }
+}
+void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& mem, bool& halted, Graphics& gfx) {
     // Extract service number from the decoded instruction
     uint16_t service = instr.syscall_num;
 
@@ -48,13 +56,12 @@ void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& me
 
         case 7:
             result = readKeyboard(ctx, mem, gfx);
-            // Special handling for readKeyboard - need to set both a0 and a1
-            if (result.success) {
-                regs[6] = result.return_value;  // x6 (a0) = key code
-                regs[7] = (result.return_value != 0) ? 1 : 0;  // x7 (a1) = key pressed flag
-            }
-            break;
-
+        if (result.success) {
+            regs[6] = result.return_value;
+            regs[7] = (result.return_value != 0) ? 1 : 0;
+            std::cout << "[ECALL 7] Set x6=" << regs[6] << ", x7=" << regs[7] << std::endl;
+        }
+        break;
         case 8:
             result = registersDump(ctx, regs);
             break;
@@ -72,6 +79,7 @@ void Ecalls::handle(const DecodedInstruction& instr, Registers& regs, Memory& me
             result = EcallResult(false, 0, true, "Unknown ECALL service");
     }
 
+    // Apply result to processor state (but skip for readKeyboard since we handled it above)
     // Apply result to processor state (but skip for readKeyboard since we handled it above)
     if (service != 7) {
         applyResult(result, regs, halted);
@@ -239,79 +247,140 @@ std::string Ecalls::readStringFromMemory(const Memory& mem, uint16_t addr) {
 
     return result;
 }
+// Global variable to track current volume and audio state
+static uint8_t current_volume = 255;  // Default to max volume
+static bool audio_muted = false;
+static std::unique_ptr<std::thread> current_audio_thread = nullptr;
+static std::atomic<bool> should_stop_audio{false};
 
-EcallResult Ecalls::playTone(const EcallContext& ctx, Memory& mem, graphics& gfx) {
+EcallResult Ecalls::playTone(const EcallContext& ctx, Memory& mem, Graphics& gfx) {
     uint16_t freq = ctx.a0;
     uint16_t duration = ctx.a1;
 
+    std::cout << "[ECALL 4 DEBUG] Received freq=" << std::dec << freq
+              << ", duration=" << duration << std::endl;
+
+    // Validate input parameters
     if (freq == 0 || duration == 0) {
+        std::cout << "[ECALL 4 ERROR] Invalid parameters" << std::endl;
         return EcallResult(false, 0, false, "Frequency and duration must be > 0");
     }
 
+    // Validate ranges
+    if (freq < 20 || freq > 20000) {
+        std::cout << "[ECALL 4 ERROR] Frequency out of range" << std::endl;
+        return EcallResult(false, 0, false, "Frequency out of range");
+    }
+
+    if (duration > 10000) {
+        std::cout << "[ECALL 4 ERROR] Duration too long" << std::endl;
+        return EcallResult(false, 0, false, "Duration too long");
+    }
+
 #ifdef _WIN32
-    // Play sound in a separate thread to prevent blocking
-    std::thread sound_thread([freq, duration]() {
-        Beep(freq, duration);
-    });
-    sound_thread.detach();
+    std::cout << "[ECALL 4] Playing tone: " << freq << " Hz for " << duration << " ms" << std::endl;
+
+    // SIMPLE VERSION: Direct blocking call
+    BOOL success = Beep(freq, duration);
+
+    if (success) {
+        std::cout << "[ECALL 4] Beep completed successfully" << std::endl;
+    } else {
+        DWORD error = GetLastError();
+        std::cout << "[ECALL 4 ERROR] Beep failed with error: " << error << std::endl;
+
+        // Try console beep as fallback
+        std::cout << "[ECALL 4] Trying console beep..." << std::endl;
+        std::cout << '\a' << std::flush;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
 #else
-    std::cout << "[ECALL 4] Simulated Tone → Freq: " << freq
-              << " Hz, Duration: " << duration << " ms (Non-Windows system)" << std::endl;
+    std::cout << "[ECALL 4] Simulated tone: " << freq << " Hz for " << duration << " ms" << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(duration));
 #endif
 
     return EcallResult(true, 0, false);
 }
 
-EcallResult Ecalls::setAudioVolume(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-   /* if (!gfx.isAudioAvailable()) {
-        return EcallResult(false, 0, false, "Audio system not initialized");
-    }*/
-
+// Even simpler volume control
+/*EcallResult Ecalls::setAudioVolume(const EcallContext& ctx, Memory& mem, Graphics& gfx) {
     uint16_t volume = ctx.a0;
 
-    // Validate volume range (0-255)
+    std::cout << "[ECALL 5] Setting volume to: " << std::dec << volume << std::endl;
+
     if (volume > 255) {
+        std::cout << "[ECALL 5 ERROR] Volume out of range" << std::endl;
         return EcallResult(false, 0, false, "Volume must be 0-255");
     }
 
-    // Set system volume
-   // gfx.setVolume(static_cast<uint8_t>(volume));
-
-    // Return the actual volume set for confirmation
+    std::cout << "[ECALL 5] Volume set successfully" << std::endl;
     return EcallResult(true, volume, false);
-}
+}*/
 
-EcallResult Ecalls::stopAudio(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-   /* if (!gfx.isAudioAvailable()) {
-        return EcallResult(false, 0, false, "Audio system not initialized");
-    }*/
+EcallResult Ecalls::setAudioVolume(const EcallContext& ctx, Memory& mem, Graphics& gfx) {
+    uint16_t volume = ctx.a0;
 
-  //  gfx.stopAudio();
-    return EcallResult(true, 0, false);
-}
-EcallResult Ecalls::readKeyboard(const EcallContext& ctx, Memory& mem, graphics& gfx) {
-    uint16_t key = 0;
-    bool keyPressed = false;
+    std::cout << "[ECALL 5 DEBUG] Received volume=" << std::dec << volume << std::endl;
 
-    // Check if there's input available without blocking
-    std::cout << "Enter key (or press Enter for no key): ";
-    std::string input;
-    std::getline(std::cin, input);
-
-    if (!input.empty()) {
-        // Get the first character and convert to key code
-        key = static_cast<uint16_t>(input[0]);
-        keyPressed = true;
+    // Validate volume range (0-255)
+    if (volume > 255) {
+        std::cout << "[ECALL 5 ERROR] Volume out of range: " << std::dec << volume << std::endl;
+        return EcallResult(false, 0, false, "Volume must be 0-255");
     }
 
-    // According to the service specification:
-    // x6 (a0) = the key code
-    // x7 (a1) = 1 if a key is pressed, 0 if nothing is pressed
+    // Store the volume setting
+    current_volume = static_cast<uint8_t>(volume);
+    audio_muted = (current_volume == 0);
 
-    // We'll handle setting both registers in a special way for this ecall
-    return EcallResult(true, key, false);
+    std::cout << "[ECALL 5] Audio volume set to: " << std::dec << (int)current_volume;
+    if (audio_muted) {
+        std::cout << " (MUTED)";
+    } else {
+        std::cout << " (" << (int)((current_volume * 100) / 255) << "%)";
+    }
+    std::cout << std::endl;
+
+#ifdef _WIN32
+    // On Windows, we can't actually control Beep() volume, but we track it
+    // for muting behavior
+    std::cout << "[ECALL 5] Note: Windows Beep() volume controlled by system" << std::endl;
+#endif
+
+    // Return the actual volume set for confirmation
+    return EcallResult(true, current_volume, false);
 }
 
+EcallResult Ecalls::stopAudio(const EcallContext& ctx, Memory& mem, Graphics& gfx) {
+    std::cout << "[ECALL 6] Stop audio called" << std::endl;
+    return EcallResult(true, 0, false);
+}
+// Add this to your class destructor or cleanup function
+void Ecalls::cleanup() {
+    // Clean up audio thread on exit
+    should_stop_audio = true;
+    if (current_audio_thread && current_audio_thread->joinable()) {
+        current_audio_thread->join();
+    }
+}
+// In ecalls.cpp, readKeyboard() method, add:
+EcallResult Ecalls::readKeyboard(const EcallContext& ctx, Memory& mem, Graphics& gfx) {
+    uint16_t key = gfx.getLastKeyPressed();
+    bool keyPressed = (key != 0);
+
+    std::cout << "[READKEYBOARD DEBUG] key=" << key << ", keyPressed=" << keyPressed << std::endl;
+
+    if (keyPressed) {
+        gfx.clearLastKeyPressed();
+
+        std::cout << "[READKEYBOARD DEBUG] Returning key=" << key << std::endl;
+
+        return EcallResult(true, key, false);  // Should return the key code
+    }
+
+    std::cout << "[READKEYBOARD DEBUG] No key, returning 0" << std::endl;
+    return EcallResult(true, 0, false);
+}
 EcallResult Ecalls::registersDump(const EcallContext& ctx, const Registers& regs) {
     std::cout << "\n=== REGISTER DUMP ===" << std::endl;
 

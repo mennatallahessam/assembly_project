@@ -3,7 +3,15 @@
 
 #include <cstdint>
 #include <stdexcept>
-
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <iomanip>
+#include <string>
+#include <stdexcept>
+#include <cstring>
+#include <map>
+#include <SFML/Graphics.hpp>
 const uint32_t MEMORY_SIZE = 65536; // 64KB address space
 
 // Custom exception classes

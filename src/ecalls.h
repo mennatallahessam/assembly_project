@@ -5,12 +5,12 @@
 #include <string>
 #include <vector>
 #include <map>
-#include"graphics.h"
+#include"Graphics.h"
 // Forward declarations
 struct DecodedInstruction;
 class Registers;
 class Memory;
-class graphics;
+class Graphics;
 
 // ECALL Service Numbers (based on ZX16 specification)
 enum EcallService {
@@ -53,8 +53,10 @@ struct EcallResult {
 
 class Ecalls {
 public:
+    ~Ecalls();
+
     // Main ECALL handler
-    void handle(const DecodedInstruction& instr, Registers& regs, Memory& mem, bool& halted, graphics& gfx);
+    void handle(const DecodedInstruction& instr, Registers& regs, Memory& mem, bool& halted, Graphics& gfx);
 
     // Create ECALL context from current register state
     EcallContext createContext(uint16_t service, const Registers& regs);
@@ -73,10 +75,13 @@ private:
     EcallResult printString(const EcallContext& ctx, Memory& mem);
 
 
-    EcallResult playTone(const EcallContext& ctx, Memory& mem, graphics& gfx);
-    EcallResult setAudioVolume(const EcallContext& ctx, Memory& mem, graphics& gfx);
-    EcallResult stopAudio(const EcallContext& ctx, Memory& mem, graphics& gfx);
-    EcallResult readKeyboard(const EcallContext& ctx, Memory& mem, graphics& gfx);
+    EcallResult playTone(const EcallContext& ctx, Memory& mem, Graphics& gfx);
+    EcallResult setAudioVolume(const EcallContext& ctx, Memory& mem, Graphics& gfx);
+    EcallResult stopAudio(const EcallContext& ctx, Memory& mem, Graphics& gfx);
+
+    void cleanup();
+
+    EcallResult readKeyboard(const EcallContext& ctx, Memory& mem, Graphics& gfx);
     EcallResult registersDump(const EcallContext& ctx, const Registers& regs);
     EcallResult memoryDump(const EcallContext& ctx, Memory& mem);
     EcallResult programExit(const EcallContext& ctx);

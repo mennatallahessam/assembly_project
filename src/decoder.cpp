@@ -333,6 +333,7 @@ DecodedInstruction Decoder::decode(uint16_t inst) {
             d.s_op = decodeSTypeOperation(inst);
             d.mnemonic = sTypeOpToString(d.s_op);
             break;
+
         }
 
         case FORMAT_L: {
